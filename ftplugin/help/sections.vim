@@ -1,9 +1,13 @@
-function! s:NextSection(backwards, isVisual)
+function! s:NextSection(separator, backwards, isVisual)
   if a:isVisual
     normal! gv
   endif
 
-  let pattern ='\v^[-|=]+'
+  if a:separator == 0
+    let pattern ='\v^\=+'
+  else
+    let pattern = '\v^[-|=]+'
+  endif
 
   if a:backwards
     let dir = '?'
@@ -11,15 +15,31 @@ function! s:NextSection(backwards, isVisual)
     let dir = '/'
   endif
 
-  execute 'silent normal! ' . dir . pattern . dir . "\r"
+  execute "silent normal! " . dir . pattern . dir . "\r"
 endfunction
 
+" Jump between any sections
 noremap <script> <buffer> <silent> ]]
-      \ :call <SID>NextDeclaration(0, 0)<cr>
+      \ :call <SID>NextSection(1, 0, 0)<bar>
+      \ execute "normal z\r"<cr>
 noremap <script> <buffer> <silent> [[
-      \ :call <SID>NextDeclaration(1, 0)<cr>
+      \ :call <SID>NextSection(1, 1, 0)<bar>
+      \ execute "normal z\r"<cr>
 
 vnoremap <script> <buffer> <silent> ]]
-      \ :call <SID>NextDeclaration(0, 1)<cr>
+      \ :call <SID>NextSection(1, 0, 1)<cr>
 vnoremap <script> <buffer> <silent> [[
-      \ :call <SID>NextDeclaration(1, 1)<cr>
+      \ :call <SID>NextSection(1, 1, 1)<cr>
+
+" Jump between main sections
+noremap <script> <buffer> <silent> []
+      \ :call <SID>NextSection(0, 0, 0)<bar>
+      \ execute "normal z\r"<cr>
+noremap <script> <buffer> <silent> ][
+      \ :call <SID>NextSection(0, 1, 0)<bar>
+      \ execute "normal z\r"<cr>
+
+vnoremap <script> <buffer> <silent> []
+      \ :call <SID>NextSection(0, 0, 1)<cr>
+vnoremap <script> <buffer> <silent> ][
+      \ :call <SID>NextSection(0, 1, 1)<cr>
