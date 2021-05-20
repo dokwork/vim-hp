@@ -70,10 +70,10 @@ endfunction
 "
 " Returns the line of the content with '\n' on the end.
 function! hp#GenerateContentLine(sname, stag, nfold, nwidth)
-  let tabsize = 2 * a:nfold
+  let tabsize = 4 * a:nfold
   let tab = repeat(' ', tabsize)
   let tag = '|' . a:stag . '|'
-  let dotscount = a:nwidth - len(a:sname) + len(tag) + tabsize
+  let dotscount = a:nwidth - len(a:sname) - len(tag) - tabsize
   
   return tab . a:sname . repeat('.', dotscount) . tag
 endfunction
@@ -81,8 +81,7 @@ endfunction
 " FUNCTION: hp#GenerateHelpContent {{{1
 "
 " Returns an array with content's lines
-function! hp#GenerateHelpContent()
-  let width = &textwidth
+function! hp#GenerateHelpContent(width)
   let current = hp#NextSectionNum(1)
   let result = ['CONTENT']
   while current > 0 && current <= line('$')
@@ -90,7 +89,7 @@ function! hp#GenerateHelpContent()
     let name = hp#ExtractSectionName(str)
     let tag = hp#ExtractSectionTag(str)
     let fold = hp#ExtractFoldLevel(current)
-    call add(result, hp#GenerateContentLine(name, tag, fold, width))
+    call add(result, hp#GenerateContentLine(name, tag, fold, a:width))
     let current = hp#NextSectionNum(current)
   endwhile
 
