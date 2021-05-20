@@ -15,7 +15,7 @@ function! hp#NextSectionNum(lnum)
 endfunction
 
 " try to find a separator {{{2
-function s:FindSeparatorBefore(lnum)
+function! s:FindSeparatorBefore(lnum)
   " optimization to not looking for a separator for a lot of empty strings
   let limit = max([0, a:lnum - 5]) 
   
@@ -40,7 +40,7 @@ function s:FindSeparatorBefore(lnum)
 endfunction
 
 " checks if the string is empty {{{2
-function s:IsEmpty(str)
+function! s:IsEmpty(str)
   return  a:str =~ '^\s*$'
 endfunction  
 
@@ -61,7 +61,7 @@ endfunction
 " FUNCTION hp#ExtractFoldLevel {{{1
 "
 " Returns a fold level extracted from the prefix
-function hp#ExtractFoldLevel(sline)
+function! hp#ExtractFoldLevel(sline)
   let index = split(a:sline, ' ')[0]
   return len(split(index, '\.'))
 endfunction
@@ -80,19 +80,19 @@ endfunction
 
 " FUNCTION: hp#GenerateHelpContent {{{1
 "
-" Returns a string with multiline content
+" Returns an array with content's lines
 function! hp#GenerateHelpContent()
+  let width = &textwidth
   let current = hp#NextSectionNum(1)
-  let max = line('$')
-  let titles = []
-  let tags = []
-  let folds = []
-  while current > 0 && current <= max
+  let result = ['CONTENT']
+  while current > 0 && current <= line('$')
     let str = getline(current)
-    call add(titles, hp#ExtractSectionName(str))
-    call add(tags, hp#ExtractSectionTag(str))
-    call add(folds, hp#GetFoldLevel(current))
+    let name = hp#ExtractSectionName(str)
+    let tag = hp#ExtractSectionTag(str)
+    let fold = hp#ExtractFoldLevel(current)
+    call add(result, hp#GenerateContentLine(name, tag, fold, width))
+    let current = hp#NextSectionNum(current)
   endwhile
 
-  return content
+  return result
 endfunction

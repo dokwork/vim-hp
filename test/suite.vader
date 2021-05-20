@@ -27,4 +27,19 @@ Execute(Extract fold level):
   AssertEqual 2, hp#ExtractFoldLevel(getline(6))
 
 Execute(Generate one line of the content):
-  AssertEqual '  1. Title..............|TitleTag|', hp#GenerateContentLine('1. Title', 'TitleTag', 1, 10)
+  AssertEqual '  1. Title..............|TitleTag|',
+      \ hp#GenerateContentLine('1. Title', 'TitleTag', 1, 10)
+
+Execute(Generate string with the content):
+  AssertEqual ['CONTENT', 
+              \'  1. Section title...|SectionTitleTag|', 
+              \'  1.1. Subsection title.|SubsectionTitleTag|'
+              \], hp#GenerateHelpContent()
+
+" Execute(Generate the Content on the top):
+"   execute "normal! ggO\<esc>"
+"   GenerateContent
+
+" Expect(Content with two sections):
+"   ???
+
