@@ -1,9 +1,46 @@
 " Returns a number of the line with a title of the next section or -1.
 "
-" lnum - number of the first line for search.
+" lnum - number of the first line for a search.
 function! hp#NextSectionNum(lnum)
+  let current = a:lnum + 1
+  while current <= line('$')
+    if !s:IsEmpty(getline(current)) && s:FindSeparatorBefore(current) != ''
+      return current
+    endif
+    let current += 1
+  endwhile
 
+  return -1
 endfunction
+
+" try to find a separator
+function s:FindSeparatorBefore(lnum)
+  " optimization to not looking for a separator for a lot of empty strings
+  let limit = max([0, a:lnum - 5]) 
+  
+  let current = a:lnum 
+  while current > limit
+    let current -= 1
+    let str = getline(current)
+
+    if s:IsEmpty(str)
+      " skip empty srting
+      continue
+    elseif str =~ '\v^[-|=]'
+      " a separator is found
+      return str
+    else
+      " break the search because we met non empty string
+      return ''
+    endif
+  endwhile
+
+  return ''
+endfunction
+
+function s:IsEmpty(str)
+  return  a:str =~ '^\s*$'
+endfunction  
 
 " Returns the name of the section
 function! hp#ExtractSectionName(sline)

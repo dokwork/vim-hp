@@ -1,13 +1,13 @@
 # Should find the next line with title
 Given (three different types of titles):
-  ================================================================================
-  1. Title                                                          *ExampleTitle*
+  ============================================================
+  1. Section title                          *SectionTitleTag*
 
-  --------------------------------------------------------------------------------
-  1.1. Subtitle1                                                *ExampleSubtitle1*
+  ------------------------------------------------------------
+
+  1.1. Subsection title                  *SubsectionTitleTag*
 
 
-  subtitle2~
-                                                                *ExampleSubtitle2*
-Execute (find the first title):
+Execute (find lines with different titles):
   AssertEqual 2, hp#NextSectionNum(1)
+  AssertEqual 6, hp#NextSectionNum(2)
