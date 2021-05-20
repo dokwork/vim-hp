@@ -58,11 +58,24 @@ function! hp#ExtractSectionTag(sline)
   return matchstr(a:sline, '\v\*\zs\w+\ze\*')
 endfunction
 
+" FUNCTION hp#ExtractFoldLevel {{{1
+"
+" Returns a fold level extracted from the prefix
+function hp#ExtractFoldLevel(sline)
+  let index = split(a:sline, ' ')[0]
+  return len(split(index, '\.'))
+endfunction
+
 " FUNCTION: hp#GenerateContentLine {{{1
 "
 " Returns the line of the content with '\n' on the end.
-function! hp#GenerateContentLine(sname, stag, sfold)
-
+function! hp#GenerateContentLine(sname, stag, nfold, nwidth)
+  let tabsize = 2 * a:nfold
+  let tab = repeat(' ', tabsize)
+  let tag = '|' . a:stag . '|'
+  let dotscount = a:nwidth - len(a:sname) + len(tag) + tabsize
+  
+  return tab . a:sname . repeat('.', dotscount) . tag
 endfunction
 
 " FUNCTION: hp#GenerateHelpContent {{{1

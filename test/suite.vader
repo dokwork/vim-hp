@@ -9,15 +9,22 @@ Given (three different types of titles):
 
 
 
-Execute (find lines with section's titles):
+Execute (Find lines with section's titles):
   AssertEqual 2, hp#NextSectionNum(1)
   AssertEqual 6, hp#NextSectionNum(2)
 
 
-Execute(extract section names):
+Execute(Extract section names):
   AssertEqual '1. Section title', hp#ExtractSectionName(getline(2))
   AssertEqual '1.1. Subsection title', hp#ExtractSectionName(getline(6))
 
-Execute(extract section tag):
+Execute(Extract section tag):
   AssertEqual 'SectionTitleTag', hp#ExtractSectionTag(getline(2))
   AssertEqual 'SubsectionTitleTag', hp#ExtractSectionTag(getline(6))
+
+Execute(Extract fold level):
+  AssertEqual 1, hp#ExtractFoldLevel(getline(2))
+  AssertEqual 2, hp#ExtractFoldLevel(getline(6))
+
+Execute(Generate one line of the content):
+  AssertEqual '  1. Title..............|TitleTag|', hp#GenerateContentLine('1. Title', 'TitleTag', 1, 10)
