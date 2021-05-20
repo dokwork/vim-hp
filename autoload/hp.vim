@@ -1,3 +1,4 @@
+" FUNCTION: hp#NextSectionNum{{{1
 " Returns a number of the line with a title of the next section or -1.
 "
 " lnum - number of the first line for a search.
@@ -13,7 +14,7 @@ function! hp#NextSectionNum(lnum)
   return -1
 endfunction
 
-" try to find a separator
+" try to find a separator {{{2
 function s:FindSeparatorBefore(lnum)
   " optimization to not looking for a separator for a lot of empty strings
   let limit = max([0, a:lnum - 5]) 
@@ -38,25 +39,34 @@ function s:FindSeparatorBefore(lnum)
   return ''
 endfunction
 
+" checks if the string is empty {{{2
 function s:IsEmpty(str)
   return  a:str =~ '^\s*$'
 endfunction  
 
-" Returns the name of the section
+" FUNCTION: hp#ExtractSectionName {{{1
+"
+" Returns the name of the section or an empty string
 function! hp#ExtractSectionName(sline)
-
+  return trim(matchstr(a:sline, '\v^.*\ze(\*\w+\*)'))
 endfunction
 
-" Returns a tag of the section
+" FUNCTION: hp#ExtractSectionTag {{{1
+"
+" Returns a tag of the section or an empty string
 function! hp#ExtractSectionTag(sline)
-
+  return matchstr(a:sline, '\v\*\zs\w+\ze\*')
 endfunction
 
+" FUNCTION: hp#GenerateContentLine {{{1
+"
 " Returns the line of the content with '\n' on the end.
 function! hp#GenerateContentLine(sname, stag, sfold)
 
 endfunction
 
+" FUNCTION: hp#GenerateHelpContent {{{1
+"
 " Returns a string with multiline content
 function! hp#GenerateHelpContent()
   let current = hp#NextSectionNum(1)

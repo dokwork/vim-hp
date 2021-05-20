@@ -8,6 +8,16 @@ Given (three different types of titles):
   1.1. Subsection title                  *SubsectionTitleTag*
 
 
-Execute (find lines with different titles):
+
+Execute (find lines with section's titles):
   AssertEqual 2, hp#NextSectionNum(1)
   AssertEqual 6, hp#NextSectionNum(2)
+
+
+Execute(extract section names):
+  AssertEqual '1. Section title', hp#ExtractSectionName(getline(2))
+  AssertEqual '1.1. Subsection title', hp#ExtractSectionName(getline(6))
+
+Execute(extract section tag):
+  AssertEqual 'SectionTitleTag', hp#ExtractSectionTag(getline(2))
+  AssertEqual 'SubsectionTitleTag', hp#ExtractSectionTag(getline(6))
