@@ -1,0 +1,5 @@
+filetype off
+set rtp+=$VADER_PATH
+set rtp+=$VIM_HP_PATH
+filetype plugin indent on
+syntax enable
