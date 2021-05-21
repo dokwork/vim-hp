@@ -96,3 +96,9 @@ function! hp#GenerateHelpContent(width)
 
   return result
 endfunction
+
+function! s:InsertContent(width)
+  call append(line('.') - 1, hp#GenerateHelpContent(a:width))
+endfunction
+
+command! -nargs=1 GenerateContent call s:InsertContent(<f-args>)

@@ -33,10 +33,17 @@ Execute(Generate string with the content):
   AssertEqual '        1.1. Subsection title...|SubTitleTag|',
               \ result[2]
 
-" Execute(Insert the Content after cursor):
-"   execute "normal! ggO\<esc>"
-"   GenerateContent
+Execute(Insert the Content to the top):
+  execute "normal! gg"
+  GenerateContent 60
 
-" Expect(Content with two sections):
-"   ???
+Expect(Content with two sections):
+  CONTENT
+      1. Section title...........................|TitleTag|
+          1.1. Subsection title..................|SubTitleTag|
+  ============================================================
+  1. Section title                                  *TitleTag*
 
+  ------------------------------------------------------------
+
+  1.1. Subsection title                          *SubTitleTag*
