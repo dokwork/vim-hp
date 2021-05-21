@@ -24,19 +24,14 @@ Execute(Extract fold level):
   AssertEqual 1, hp#ExtractFoldLevel(getline(2))
   AssertEqual 2, hp#ExtractFoldLevel(getline(6))
 
-Execute(Generate one line of the content):
-  AssertEqual '    1. Title........|TitleTag|',
-      \ hp#GenerateContentLine('1. Title', 'TitleTag', 1, 30)
-  AssertEqual '        1. SubTitle...|SubTitleTag|',
-      \ hp#GenerateContentLine('1. SubTitle', 'SubTitleTag', 2, 35)
-
 Execute(Generate string with the content):
-  AssertEqual 'CONTENT', 
-              \ hp#GenerateHelpContent(40)[0]
+  let result = hp#GenerateHelpContent(45)
+  AssertEqual 'CONTENT',
+              \ result[0]
   AssertEqual '    1. Section title............|TitleTag|', 
-              \ hp#GenerateHelpContent(40)[1]
+              \ result[1]
   AssertEqual '        1.1. Subsection title...|SubTitleTag|',
-              \ hp#GenerateHelpContent(45)[2]
+              \ result[2]
 
 " Execute(Insert the Content after cursor):
 "   execute "normal! ggO\<esc>"

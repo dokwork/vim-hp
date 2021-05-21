@@ -62,35 +62,36 @@ endfunction
 "
 " Returns a fold level extracted from the prefix
 function! hp#ExtractFoldLevel(sline)
-  let index = split(a:sline, ' ')[0]
+  let index = matchstr(a:sline, '\v^(\d+\.?)+')
   return len(split(index, '\.'))
-endfunction
-
-" FUNCTION: hp#GenerateContentLine {{{1
-"
-" Returns the line of the content with '\n' on the end.
-function! hp#GenerateContentLine(sname, stag, nfold, nwidth)
-  let tabsize = 4 * a:nfold
-  let tab = repeat(' ', tabsize)
-  let tag = '|' . a:stag . '|'
-  let dotscount = a:nwidth - len(a:sname) - len(tag) - tabsize
-  
-  return tab . a:sname . repeat('.', dotscount) . tag
 endfunction
 
 " FUNCTION: hp#GenerateHelpContent {{{1
 "
 " Returns an array with content's lines
 function! hp#GenerateHelpContent(width)
-  let current = hp#NextSectionNum(1)
+  let names = []
+  let tags = []
+  let folds = []
+  let i = hp#NextSectionNum(1)
+  while i > 0 && i <= line('$')
+    let str = getline(i)
+    call add(names, hp#ExtractSectionName(str))
+    call add(tags, hp#ExtractSectionTag(str))
+    call add(folds, hp#ExtractFoldLevel(str))
+    let i = hp#NextSectionNum(i)
+  endwhile
+
   let result = ['CONTENT']
-  while current > 0 && current <= line('$')
-    let str = getline(current)
-    let name = hp#ExtractSectionName(str)
-    let tag = hp#ExtractSectionTag(str)
-    let fold = hp#ExtractFoldLevel(current)
-    call add(result, hp#GenerateContentLine(name, tag, fold, a:width))
-    let current = hp#NextSectionNum(current)
+  let longest_tag_length = max(map(copy(tags), 'len' . '(v:val)')) + 2
+  let tab_size = 4
+  let i = 0
+  while i < len(names)
+    let tab = repeat(' ', folds[i] * tab_size)
+    let section = tab . names[i]
+    let dots = repeat('.', a:width - longest_tag_length - len(section))
+    call add(result, section . dots . '|' . tags[i] . '|')
+    let i += 1
   endwhile
 
   return result
