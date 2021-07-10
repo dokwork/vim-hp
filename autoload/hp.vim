@@ -1,10 +1,3 @@
-" Create a command to generate the Contents
-command! -nargs=1 GenerateContents call <SID>InsertContents(<f-args>)
-
-function! s:InsertContents(width)
-  call append(line('.') - 1, hp#GenerateHelpContent(a:width))
-endfunction
-
 " Returns an array with content's lines
 function! hp#GenerateHelpContent(width)
   let names = []
@@ -40,7 +33,9 @@ endfunction
 function! hp#NextSectionNum(lnum)
   let current = a:lnum + 1
   while current <= line('$')
-    if !s:IsEmpty(getline(current)) && s:FindSeparatorBefore(current) != ''
+    let str = getline(current)
+    if !(s:IsEmpty(str) || s:IsSeparator(str))
+          \ && s:IsSeparator(getline(current - 1))
       return current
     endif
     let current += 1
@@ -74,30 +69,9 @@ function! hp#ExtractFoldLevel(lnum)
   return len(split(index, '\.'))
 endfunction
 
-" try to find a separator {{{2
-function! s:FindSeparatorBefore(lnum)
-  " optimization to not looking for a separator for a lot of empty strings
-  let limit = max([0, a:lnum - 5]) 
-  
-  let current = a:lnum 
-  while current > limit
-    let current -= 1
-    let str = getline(current)
-
-    if s:IsEmpty(str)
-      " skip empty srting
-      continue
-    elseif str =~ '\v^[-|=]'
-      " a separator is found
-      return str
-    else
-      " break the search because we met non empty string
-      return ''
-    endif
-  endwhile
-
-  return ''
-endfunction
+function! s:IsSeparator(str)
+  return  a:str =~ '\v^[-|=]'
+endfunction  
 
 " checks if the string is empty {{{2
 function! s:IsEmpty(str)

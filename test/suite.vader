@@ -1,28 +1,35 @@
 Given (three different types of titles):
   ============================================================
+
+  ============================================================
   1. Section title                                  *TitleTag*
 
-  ------------------------------------------------------------
+  Text
 
+  ------------------------------------------------------------
   1.1. Subsection title                          
                                                  *SubTitleTag*
 
+  ------------------------------------------------------------
+
+  Text
+
 
 Execute (Find lines with section's titles):
-  AssertEqual 2, hp#NextSectionNum(1)
-  AssertEqual 6, hp#NextSectionNum(2)
+  AssertEqual 4, hp#NextSectionNum(1)
+  AssertEqual 9, hp#NextSectionNum(4)
 
 Execute(Extract section names):
-  AssertEqual '1. Section title', hp#ExtractSectionName(2)
-  AssertEqual '1.1. Subsection title', hp#ExtractSectionName(6)
+  AssertEqual '1. Section title', hp#ExtractSectionName(4)
+  AssertEqual '1.1. Subsection title', hp#ExtractSectionName(9)
 
 Execute(Extract section tag):
-  AssertEqual 'TitleTag', hp#ExtractSectionTag(2)
-  AssertEqual 'SubTitleTag', hp#ExtractSectionTag(6)
+  AssertEqual 'TitleTag', hp#ExtractSectionTag(4)
+  AssertEqual 'SubTitleTag', hp#ExtractSectionTag(9)
 
 Execute(Extract fold level):
-  AssertEqual 1, hp#ExtractFoldLevel(2)
-  AssertEqual 2, hp#ExtractFoldLevel(6)
+  AssertEqual 1, hp#ExtractFoldLevel(4)
+  AssertEqual 2, hp#ExtractFoldLevel(9)
 
 Execute(Generate string with the content):
   let result = hp#GenerateHelpContent(45)
@@ -34,17 +41,24 @@ Execute(Generate string with the content):
               \ result[2]
 
 Execute(Insert the Content to the top):
-  execute "normal! gg"
+  execute "normal! ggj"
   GenerateContent 60
 
 Expect(Content with two sections):
+  ============================================================
   CONTENTS
       1. Section title...........................|TitleTag|
           1.1. Subsection title..................|SubTitleTag|
+
   ============================================================
   1. Section title                                  *TitleTag*
 
-  ------------------------------------------------------------
+  Text
 
+  ------------------------------------------------------------
   1.1. Subsection title                          
                                                  *SubTitleTag*
+
+  ------------------------------------------------------------
+  
+  Text

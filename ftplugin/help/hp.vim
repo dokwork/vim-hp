@@ -9,6 +9,14 @@ function! GetHelpFold(bufline)
   endif
 endfunction
 
+" Create a command to generate the Contents
+command! -nargs=? GenerateContents call <SID>InsertContents(<f-args>)
+
+function! s:InsertContents(...)
+  let width = ( a:0 > 0 ) ? a:1 : 70
+  call append(line('.') - 1, hp#GenerateHelpContent(width))
+endfunction
+
 " Jump between any sections
 noremap <script> <buffer> <silent> ]]
       \ :call <SID>NextSection(1, 0, 0)<bar>
