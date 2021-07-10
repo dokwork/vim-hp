@@ -1,21 +1,12 @@
-function! s:NextSection(separator, backwards, isVisual)
-  if a:isVisual
-    normal! gv
-  endif
+setlocal foldmethod=expr
+setlocal foldexpr=GetHelpFold(v:lnum)
 
-  if a:separator == 0
-    let pattern ='\v^\=+'
+function! GetHelpFold(bufline)
+  if getline(a:bufline) =~ '\v^\s*[-|=]+\s*$'
+    return '0'
   else
-    let pattern = '\v^[-|=]+'
+    return '1'
   endif
-
-  if a:backwards
-    let dir = '?'
-  else
-    let dir = '/'
-  endif
-
-  execute "silent normal! " . dir . pattern . dir . "\r"
 endfunction
 
 " Jump between any sections
@@ -43,3 +34,23 @@ vnoremap <script> <buffer> <silent> []
       \ :call <SID>NextSection(0, 0, 1)<cr>
 vnoremap <script> <buffer> <silent> ][
       \ :call <SID>NextSection(0, 1, 1)<cr>
+
+function! s:NextSection(separator, backwards, isVisual)
+  if a:isVisual
+    normal! gv
+  endif
+
+  if a:separator == 0
+    let pattern ='\v^\=+'
+  else
+    let pattern = '\v^[-|=]+'
+  endif
+
+  if a:backwards
+    let dir = '?'
+  else
+    let dir = '/'
+  endif
+
+  execute "silent normal! " . dir . pattern . dir . "\r"
+endfunction
