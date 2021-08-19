@@ -12,8 +12,11 @@ endfunction
 " Create a command to generate the Contents
 command! -nargs=? GenerateContents call <SID>InsertContents(<f-args>)
 
+" Updates titles
+command! UpdateTitles call hp#UpdateTitles(hp#BuildSections())
+
 function! s:InsertContents(...)
-  let width = ( a:0 > 0 ) ? a:1 : 70
+  let width = ( a:0 > 0 ) ? a:1 : 80
   call append(line('.') - 1, hp#GenerateHelpContent(width))
 endfunction
 
