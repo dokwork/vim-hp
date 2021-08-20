@@ -1,17 +1,17 @@
 Given (Three different types of titles):
   ============================================================
 
-  ============================================================
-  1. Section title                                  *TitleTag*
+  =
+  1. Section title *TitleTag*
 
-  ------------------------------------------------------------
-  1.1. Subsection title                          *SubTitleTag*
+  ---
+  1.1. Subsection title *SubTitleTag*
 
-  ------------------------------------------------------------
-  #.#. New subsection title                   *NewSubTitleTag*
+  --
+  #.#. New subsection title *NewSubTitleTag*
 
-  ============================================================
-  #. New section title                    *NewSectionTitleTag*
+  ==
+  #. New section title *NewSectionTitleTag*
 
 Execute (Find lines with section's titles):
   AssertEqual 4, hp#NextSectionNum(0)
@@ -56,7 +56,7 @@ Execute(Build sections):
 
 Execute(Generate string with the content):
   let result = hp#GenerateHelpContent(55)
-  AssertEqual 'CONTENTS',
+  AssertEqual '*CONTENTS*',
               \ result[0]
   AssertEqual '    1. Section title.........................|TitleTag|', 
               \ result[1]
@@ -69,14 +69,14 @@ Execute(Generate string with the content):
 
 Execute(Insert the Content on the 2 line and update titles):
   execute 'set filetype=help'
+  execute 'set textwidth=60'
   execute "normal! ggj"
-  GenerateContent 60
-  AssertEqual 2, hp#FindContents()
-  UpdateTitles
+  HpGenerateContent 60
+  AssertEqual { 'begin': 2, 'end': 6, 'width': 60 }, hp#FindContents()
 
 Expect(Content with two sections):
   ============================================================
-  CONTENTS
+  *CONTENTS*
       1. Section title..............................|TitleTag|
           1.1. Subsection title..................|SubTitleTag|
           1.2. New subsection title...........|NewSubTitleTag|

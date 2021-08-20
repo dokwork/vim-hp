@@ -10,14 +10,15 @@ function! GetHelpFold(bufline)
 endfunction
 
 " Create a command to generate the Contents
-command! -nargs=? GenerateContents call <SID>InsertContents(<f-args>)
+command! -nargs=? HpGenerateContents call <SID>InsertContents(<f-args>)
 
 " Updates titles
-command! UpdateTitles call hp#UpdateTitles(hp#BuildSections())
+command! HpUpdateAll call hp#UpdateAll()
 
 function! s:InsertContents(...)
   let width = ( a:0 > 0 ) ? a:1 : 80
   call append(line('.') - 1, hp#GenerateHelpContent(width))
+  call hp#UpdateAll()
 endfunction
 
 " Jump between any sections

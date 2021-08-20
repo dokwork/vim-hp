@@ -1,28 +1,45 @@
-let s:level_regex = '((\d|\#)+\.?)+'
+const s:CONTENTS = '*CONTENTS*'
+const s:SEPARATOR_REGEX = '[-=]'
+const s:LEVEL_REGEX = '((\d|\#)+\.?)+'
+const s:TAG_REGEX = '(\*\w+\*)'
 
-" Replace levels for titles according to the {sections}
-function! hp#UpdateTitles(sections) 
-  for section in a:sections 
+function! hp#UpdateAll() abort
+  let sections = hp#BuildSections()
+  if empty(sections)
+    throw 'No one section was found.'
+  endif
+
+  call hp#UpdateContents(sections)
+
+  for section in sections 
     let line =  section.line
-    try
-      execute  line .. 's/\v' .. s:level_regex .. '/' .. section.level
-    catch 
-      throw 'Level was not found at line ' .. line .. ":\n" .. getline(line)
-            \.. "\nSection was " .. string(section)
-    endtry
+    let orig_str = getline(line)
+
+    " fullfill separator
+    let prev_str = getline(line-1)
+    if s:IsSeparator(prev_str)
+      let separator = prev_str[0]
+      call setline(line-1, repeat(separator, &textwidth))
+    endif
+    
+    " replace level
+    call hp#UpdateLevel(section)
+
+    " move title to the left and tag to the right
+    let str = getline(line)
+    let tag_idx = stridx(str, section.tag) - 1 " -1 for *
+    call hp#LeftRight(line, tag_idx)
   endfor
 endfunction
 
-" Returns the line with CONTENTS
-function! hp#FindContents()
-  let firstline = search('CONTENTS', 'nc')
-  return firstline > 0 ? firstline : search('CONTENTS', 'n')
+function! hp#UpdateContents(sections) abort
+
 endfunction
 
 " Returns an array with content's lines
 function! hp#GenerateHelpContent(width, ...)
   let sections = a:0 > 1 ? a:1 : hp#BuildSections()
-  let result = ['CONTENTS']
+  let result = [s:CONTENTS]
   let tab_size = 4
   for section in sections
     let fold = len(split(section.level, '\.'))
@@ -35,10 +52,57 @@ function! hp#GenerateHelpContent(width, ...)
   return result
 endfunction
 
+function! hp#LeftRight(lnum, pos)
+    const str = getline(a:lnum)
+    if empty(str)
+      return 0
+    endif
+    const left = trim(a:pos > 0 ? str[0:a:pos-1] : '')
+    const right = trim(str[a:pos:])
+    const spaces = &textwidth - len(left) - len(right)
+    const new_str = left .. repeat(' ', spaces) .. right
+    call setline(a:lnum, new_str)
+endfunction
+
+function! hp#UpdateLevels(sections) abort
+  for section in a:sections 
+    call hp#UpdateLevel(section)
+  endfor
+endfunction
+
+function! hp#UpdateLevel(section) abort
+    let line = a:section.line
+    try
+      execute  line .. 's/\v' .. s:LEVEL_REGEX .. '/' .. a:section.level
+    catch 
+      throw 'Level was not found at line ' .. line .. ":\n" .. getline(line)
+            \.. "\nSection was " .. string(a:section) .. "\nReason is:\n"
+            \.. v:errmsg
+    endtry
+endfunction
+
+" Returns { begin: <number>, end:<number>, width: <number> } or {}
+function! hp#FindContents()
+  " try to find before cursor
+  " if not found, try to find after cursor
+  let firstline = search(s:CONTENTS, 'nc')
+  let firstline = firstline > 0 ? firstline : search(s:CONTENTS, 'n')
+  if firstline < 0
+    return {}
+  endif
+  const i = stridx(getline(firstline), s:CONTENTS)
+  let end = firstline
+  while end < line('$') && !s:IsEmpty(getline(end + 1))
+    let end += 1
+  endwhile
+
+  return { 'begin': firstline, 'end': end, 'width': len(getline(end)) - i }
+endfunction
+
 " Returns array with sections
 function! hp#BuildSections() abort 
   let sections = []
-  let i = hp#NextSectionNum(hp#FindContents())
+  let i = hp#NextSectionNum(hp#FindContents()['end'])
   while i > 0 && i <= line('$')
     let str = getline(i)
     let mask = hp#ExtractSectionLevelMask(i)
@@ -77,13 +141,13 @@ endfunction
 
 " Returns a mask of level extracted from the section or empty string
 function! hp#ExtractSectionLevelMask(lnum)
-  let mask = matchstr(getline(a:lnum), '\v^\s*\zs' .. s:level_regex)
+  let mask = matchstr(getline(a:lnum), '\v^\s*\zs' .. s:LEVEL_REGEX)
   return substitute(mask, '\d', '#', 'g')
 endfunction
 
 " Returns the name of the section or an empty string
 function! hp#ExtractSectionName(lnum)
-  let name = matchstr(getline(a:lnum), '\v^.*\ze(\*\w+\*)')
+  let name = matchstr(getline(a:lnum), '\v^.*\ze' .. s:TAG_REGEX)
   let level = hp#ExtractSectionLevelMask(a:lnum)
   let name = trim(name[len(level):])
   return empty(name) ? trim(getline(a:lnum)) : name
@@ -115,8 +179,9 @@ function! hp#IncrementLevel(level, mask) abort
   return join(levels[:i], '.') .. '.'
 endfunction
 
+" Checks that line begins from one of the symbols: '-' or '='
 function! s:IsSeparator(str)
-  return  a:str =~ '\v^[-|=]'
+  return  a:str =~ '\v^' .. s:SEPARATOR_REGEX .. '+\s*$'
 endfunction  
 
 " checks if the string is empty
