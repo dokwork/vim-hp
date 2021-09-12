@@ -1,7 +1,4 @@
 # TODO
 
-- [ ] Function to put title and tag on one line:
-      ```vimL
-      ====================
-      Title         *tag*
-      ```
+- [ ] Complete `HpUpdateAll`
+- [ ] Add `LeftRight` command

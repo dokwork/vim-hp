@@ -1,4 +1,4 @@
-Given (Three different types of titles):
+Given (Doc draft example):
   ============================================================
 
   =
@@ -50,12 +50,12 @@ Execute(Build sections):
   \   { 'name': 'New subsection title', 'tag': 'NewSubTitleTag', 'level': '1.2.', 'line': 10 },
   \   { 'name': 'New section title', 'tag': 'NewSectionTitleTag', 'level': '2.', 'line': 13 },
   \]
-  let actual = hp#BuildSections()
+  let actual = hp#BuildSections(1)
 
   AssertEqual expected, actual
 
 Execute(Generate string with the content):
-  let result = hp#GenerateHelpContent(55)
+  let result = hp#GenerateContentsItems(55, 1)
   AssertEqual '*CONTENTS*',
               \ result[0]
   AssertEqual '    1. Section title.........................|TitleTag|', 
@@ -93,3 +93,56 @@ Expect(Content with two sections):
 
   ============================================================
   2. New section title                    *NewSectionTitleTag*
+
+# Case when doc was edited and Contents is not actual
+Given(Modified doc example):
+  #.#. This is a part of document before the Contents. 
+  It should not be included in the Contetns and should not be 
+  changed.
+
+  *CONTENTS*
+      1. Section A..................................|SectionA|
+          1.1. Subsection A......................|SubsectionA|
+      2. Section B..................................|SectionB|
+
+  ============================================================
+  1. New Section                                  *NewSection*
+
+  ============================================================
+  1. Section A                          *SectionA*
+
+  ------------------------------------------------------------
+  #.#. New Subsection A                  *NewSubsectionA*
+
+  ------------------------------------------------------------
+  1.2. Subsection A                  *SubsectionA*
+
+  ============================================================
+
+Execute(Update doc):
+  HpUpdateAll
+
+Expect(Updated Contents and sections numbers):
+  #.#. This is a part of document before the Contents. 
+  It should not be included in the Contetns and should not be 
+  changed.
+
+  *CONTENTS*
+      1. New Section..............................|NewSection|
+      2. Section A..................................|SectionA|
+          2.1. New Subsection A...............|NewSubsectionA|
+          2.2. Subsection A......................|SubsectionA|
+
+  ============================================================
+  1. New Section                                  *NewSection*
+
+  ============================================================
+  2. Section A                                      *SectionA*
+
+  ------------------------------------------------------------
+  2.1. New Subsection A                       *NewSubsectionA*
+
+  ------------------------------------------------------------
+  2.2. Subsection A                              *SubsectionA*
+  
+  ============================================================

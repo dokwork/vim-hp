@@ -1,14 +1,6 @@
 setlocal foldmethod=expr
 setlocal foldexpr=GetHelpFold(v:lnum)
 
-function! GetHelpFold(bufline)
-  if getline(a:bufline) =~ '\v^\s*[-|=]+\s*$'
-    return '0'
-  else
-    return '1'
-  endif
-endfunction
-
 " Create a command to generate the Contents
 command! -nargs=? HpGenerateContents call <SID>InsertContents(<f-args>)
 
@@ -17,7 +9,8 @@ command! HpUpdateAll call hp#UpdateAll()
 
 function! s:InsertContents(...)
   let width = ( a:0 > 0 ) ? a:1 : 80
-  call append(line('.') - 1, hp#GenerateHelpContent(width))
+  let lnum = line('.')
+  call append(lnum - 1, hp#GenerateContentsItems(width, lnum))
   call hp#UpdateAll()
 endfunction
 

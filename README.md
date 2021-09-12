@@ -18,13 +18,6 @@ The line with section name can have a tag at the end:
 =============================
 <section name>   *<tag name>*
 ```
-
-Also, tag can be placed on the next line after the line with section name:
-
-```vimscript
-=============================
-<section name>   
-                 *<tag name>*
 ```
 
 A section which begins from the line-separator `=` is counted as section with level 1.

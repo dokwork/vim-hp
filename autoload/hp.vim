@@ -4,12 +4,11 @@ const s:LEVEL_REGEX = '((\d|\#)+\.?)+'
 const s:TAG_REGEX = '(\*\w+\*)'
 
 function! hp#UpdateAll() abort
-  let sections = hp#BuildSections()
+  let contents = hp#FindContents()
+  let sections = hp#BuildSections(contents['end'])
   if empty(sections)
     throw 'No one section was found.'
   endif
-
-  call hp#UpdateContents(sections)
 
   for section in sections 
     let line =  section.line
@@ -30,15 +29,17 @@ function! hp#UpdateAll() abort
     let tag_idx = stridx(str, section.tag) - 1 " -1 for *
     call hp#LeftRight(line, tag_idx)
   endfor
+
+  call hp#UpdateContents(contents, sections)
 endfunction
 
-function! hp#UpdateContents(sections) abort
-
-endfunction
-
-" Returns an array with content's lines
-function! hp#GenerateHelpContent(width, ...)
-  let sections = a:0 > 1 ? a:1 : hp#BuildSections()
+" Returns an array with content's lines with width `width` for all 
+" sections. Additionally, a list of sections or number of line can be 
+" specified.
+function! hp#GenerateContentsItems(width, lfromOrSections) abort
+  let sections = type(a:lfromOrSections) == v:t_number 
+    \ ? hp#BuildSections(a:lfromOrSections)
+    \ : a:lfromOrSections
   let result = [s:CONTENTS]
   let tab_size = 4
   for section in sections
@@ -52,6 +53,26 @@ function! hp#GenerateHelpContent(width, ...)
   return result
 endfunction
 
+function! hp#UpdateContents(contents, sections) abort
+  const lines = hp#GenerateContentsItems(a:contents.width, a:sections)
+  let lnum = a:contents.begin
+  for line in lines
+    if lnum <= a:contents.end
+      call setline(lnum, line)
+    else 
+      call append(lnum - 1, line)
+    endif
+    let lnum += 1
+  endfor
+
+  let result = copy(a:contents)
+  let result.end =lnum - 1
+
+  return result
+endfunction
+
+" Moves everything befor `pos` on the line `lnum` to the left and
+" other part to the right
 function! hp#LeftRight(lnum, pos)
     const str = getline(a:lnum)
     if empty(str)
@@ -73,7 +94,7 @@ endfunction
 function! hp#UpdateLevel(section) abort
     let line = a:section.line
     try
-      execute  line .. 's/\v' .. s:LEVEL_REGEX .. '/' .. a:section.level
+      execute  line .. 's/\v^\s*' .. s:LEVEL_REGEX .. '/' .. a:section.level
     catch 
       throw 'Level was not found at line ' .. line .. ":\n" .. getline(line)
             \.. "\nSection was " .. string(a:section) .. "\nReason is:\n"
@@ -99,10 +120,10 @@ function! hp#FindContents()
   return { 'begin': firstline, 'end': end, 'width': len(getline(end)) - i }
 endfunction
 
-" Returns array with sections
-function! hp#BuildSections() abort 
+" Returns array with sections which follow after line `lfrom`.
+function! hp#BuildSections(lfrom) abort 
   let sections = []
-  let i = hp#NextSectionNum(hp#FindContents()['end'])
+  let i = hp#NextSectionNum(a:lfrom)
   while i > 0 && i <= line('$')
     let str = getline(i)
     let mask = hp#ExtractSectionLevelMask(i)
