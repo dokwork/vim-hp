@@ -4,21 +4,31 @@ const s:LEVEL_REGEX = '((\d|\#)+\.?)+'
 const s:TAG_REGEX = '(\*\w+\*)'
 
 function! hp#UpdateAll() abort
-  let contents = hp#FindContents()
-  let sections = hp#BuildSections(contents['end'])
-  if empty(sections)
-    throw 'No one section was found.'
+  const contents = hp#FindContents()
+  if empty(contents)
+    throw 'Contents was not found. Please, generate it before updating'
   endif
 
-  for section in sections 
+  const lfrom = contents['end']
+  const sections = hp#BuildSections(lfrom)
+  if empty(sections)
+    throw 'No one section was found after ' .. lfrom .. ' line.'
+  endif
+
+  call s:UpdateSections(sections)
+  call s:UpdateContents(contents, sections)
+endfunction
+
+function! s:UpdateSections(sections)
+  for section in a:sections 
     let line =  section.line
-    let orig_str = getline(line)
 
     " fullfill separator
     let prev_str = getline(line-1)
     if s:IsSeparator(prev_str)
       let separator = prev_str[0]
-      call setline(line-1, repeat(separator, &textwidth))
+      let width = &textwidth > 0 ? &textwidth : len(prev_str)
+      call setline(line-1, repeat(separator, width))
     endif
     
     " replace level
@@ -29,8 +39,31 @@ function! hp#UpdateAll() abort
     let tag_idx = stridx(str, section.tag) - 1 " -1 for *
     call hp#LeftRight(line, tag_idx)
   endfor
+endfunction
 
-  call hp#UpdateContents(contents, sections)
+function! s:UpdateContents(contents, sections) abort
+  const lines = hp#GenerateContentsItems(a:contents.width, a:sections)
+  let lnum = a:contents.begin
+  for line in lines
+    if lnum <= a:contents.end
+      call setline(lnum, line)
+    else 
+      call append(lnum - 1, line)
+    endif
+    let lnum += 1
+  endfor
+
+  let result = copy(a:contents)
+  let result.end = lnum - 1
+
+  " remove old items
+  if result.end < a:contents.end
+    for i in range(lnum, a:contents.end)
+      execute lnum .. 'd'
+    endfor
+  endif
+
+  return result
 endfunction
 
 " Returns an array with content's lines with width `width` for all 
@@ -53,24 +86,6 @@ function! hp#GenerateContentsItems(width, lfromOrSections) abort
   return result
 endfunction
 
-function! hp#UpdateContents(contents, sections) abort
-  const lines = hp#GenerateContentsItems(a:contents.width, a:sections)
-  let lnum = a:contents.begin
-  for line in lines
-    if lnum <= a:contents.end
-      call setline(lnum, line)
-    else 
-      call append(lnum - 1, line)
-    endif
-    let lnum += 1
-  endfor
-
-  let result = copy(a:contents)
-  let result.end =lnum - 1
-
-  return result
-endfunction
-
 " Moves everything befor `pos` on the line `lnum` to the left and
 " other part to the right
 function! hp#LeftRight(lnum, pos)
@@ -78,9 +93,10 @@ function! hp#LeftRight(lnum, pos)
     if empty(str)
       return 0
     endif
+    const width = &textwidth > 0 ? &textwidth : 80
     const left = trim(a:pos > 0 ? str[0:a:pos-1] : '')
     const right = trim(str[a:pos:])
-    const spaces = &textwidth - len(left) - len(right)
+    const spaces = width - len(left) - len(right)
     const new_str = left .. repeat(' ', spaces) .. right
     call setline(a:lnum, new_str)
 endfunction
@@ -111,13 +127,13 @@ function! hp#FindContents()
   if firstline < 0
     return {}
   endif
-  const i = stridx(getline(firstline), s:CONTENTS)
   let end = firstline
   while end < line('$') && !s:IsEmpty(getline(end + 1))
     let end += 1
   endwhile
 
-  return { 'begin': firstline, 'end': end, 'width': len(getline(end)) - i }
+  const padding = stridx(getline(firstline), s:CONTENTS)
+  return { 'begin': firstline, 'end': end, 'width': len(getline(end)) - padding }
 endfunction
 
 " Returns array with sections which follow after line `lfrom`.
@@ -125,21 +141,30 @@ function! hp#BuildSections(lfrom) abort
   let sections = []
   let i = hp#NextSectionNum(a:lfrom)
   while i > 0 && i <= line('$')
-    let str = getline(i)
-    let mask = hp#ExtractSectionLevelMask(i)
-    let section = {
-          \ 'name': hp#ExtractSectionName(i),
-          \ 'tag': hp#ExtractSectionTag(i),
-          \ 'level': empty(sections) 
-          \           ? '1.' 
-          \           : hp#IncrementLevel(sections[-1].level, mask),
-          \ 'line': i
-          \ }
+    try
+      let section = ParseSection(i, sections)
+    catch
+      throw 'Exception on parsing section on the line ' .. i 
+            \ .. '. The reason is: ' .. v:errmsg
+    endtry
     call add(sections, section)
     let i = hp#NextSectionNum(i)
   endwhile
 
   return sections 
+endfunction
+
+function! ParseSection(lnum, sections) abort
+  let str = getline(a:lnum)
+  let mask = hp#ExtractSectionLevelMask(a:lnum)
+  return {
+        \ 'name': hp#ExtractSectionName(a:lnum),
+        \ 'tag': hp#ExtractSectionTag(a:lnum),
+        \ 'level': empty(a:sections) 
+        \           ? '1.' 
+        \           : hp#IncrementLevel(a:sections[-1].level, mask),
+        \ 'line': a:lnum
+        \ }
 endfunction
 
 " Returns a number of the line with a title of the next section or -1.

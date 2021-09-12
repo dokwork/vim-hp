@@ -1,0 +1,68 @@
+Given (Doc draft example):
+  ============================================================
+
+  =
+  1. Section title *TitleTag*
+
+  ---
+  1.1. Subsection title *SubTitleTag*
+
+  --
+  #.#. New subsection title *NewSubTitleTag*
+
+  ==
+  #. New section title *NewSectionTitleTag*
+
+Execute (Find lines with section's titles):
+  AssertEqual 4, hp#NextSectionNum(0)
+  AssertEqual 7, hp#NextSectionNum(4)
+  AssertEqual 10, hp#NextSectionNum(7)
+  AssertEqual 13, hp#NextSectionNum(10)
+
+Execute(Extract section level mask):
+  AssertEqual '#.', hp#ExtractSectionLevelMask(4)
+  AssertEqual '#.#.', hp#ExtractSectionLevelMask(7)
+  AssertEqual '#.#.', hp#ExtractSectionLevelMask(10)
+  AssertEqual '#.', hp#ExtractSectionLevelMask(13)
+
+Execute(Increment level by mask):
+  AssertEqual '2.', hp#IncrementLevel('1.', '3.')
+  AssertEqual '1.2.', hp#IncrementLevel('1.1.', '#.#.')
+  AssertEqual '2.', hp#IncrementLevel('1.1.', '#.')
+  AssertEqual '1.1.', hp#IncrementLevel('1.', '#.#.')
+
+Execute(Extract section names):
+  AssertEqual 'Section title', hp#ExtractSectionName(4)
+  AssertEqual 'Subsection title', hp#ExtractSectionName(7)
+  AssertEqual 'New subsection title', hp#ExtractSectionName(10)
+  AssertEqual 'New section title', hp#ExtractSectionName(13)
+
+Execute(Extract section tag):
+  AssertEqual 'TitleTag', hp#ExtractSectionTag(4)
+  AssertEqual 'SubTitleTag', hp#ExtractSectionTag(7)
+  AssertEqual 'NewSubTitleTag', hp#ExtractSectionTag(10)
+  AssertEqual 'NewSectionTitleTag', hp#ExtractSectionTag(13)
+
+Execute(Build sections):
+  let expected = [
+  \   { 'name': 'Section title', 'tag': 'TitleTag', 'level': '1.', 'line': 4 },
+  \   { 'name': 'Subsection title', 'tag': 'SubTitleTag', 'level': '1.1.', 'line': 7 },
+  \   { 'name': 'New subsection title', 'tag': 'NewSubTitleTag', 'level': '1.2.', 'line': 10 },
+  \   { 'name': 'New section title', 'tag': 'NewSectionTitleTag', 'level': '2.', 'line': 13 },
+  \]
+  let actual = hp#BuildSections(1)
+
+  AssertEqual expected, actual
+
+Execute(Generate string with the content):
+  let result = hp#GenerateContentsItems(55, 1)
+  AssertEqual '*CONTENTS*',
+              \ result[0]
+  AssertEqual '    1. Section title.........................|TitleTag|', 
+              \ result[1]
+  AssertEqual '        1.1. Subsection title.............|SubTitleTag|',
+              \ result[2]
+  AssertEqual '        1.2. New subsection title......|NewSubTitleTag|',
+              \ result[3]
+  AssertEqual '    2. New section title...........|NewSectionTitleTag|',
+              \ result[4]

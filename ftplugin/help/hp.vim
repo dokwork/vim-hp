@@ -1,5 +1,5 @@
-setlocal foldmethod=expr
-setlocal foldexpr=GetHelpFold(v:lnum)
+" setlocal foldmethod=expr
+" setlocal foldexpr=GetHelpFold(v:lnum)
 
 " Create a command to generate the Contents
 command! -nargs=? HpGenerateContents call <SID>InsertContents(<f-args>)
@@ -7,11 +7,18 @@ command! -nargs=? HpGenerateContents call <SID>InsertContents(<f-args>)
 " Updates titles
 command! HpUpdateAll call hp#UpdateAll()
 
+command! LeftRight call <SID>LeftRight()
+
 function! s:InsertContents(...)
   let width = ( a:0 > 0 ) ? a:1 : 80
   let lnum = line('.')
   call append(lnum - 1, hp#GenerateContentsItems(width, lnum))
   call hp#UpdateAll()
+endfunction
+
+function! s:LeftRight()
+  let [bufnum, lnum, col, off] = getpos('.')
+  call hp#LeftRight(lnum, col)
 endfunction
 
 " Jump between any sections
