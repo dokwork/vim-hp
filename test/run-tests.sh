@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
 # =====================================================
-# This script is run Vader tests. You can specify 
+# This script runs Vader tests. You can specify 
 # particular test or run all *.vader from the ./test/
 # directory just ommiting particular test:
 #
-# > run-tests.sh utils.vader
+# > run-tests.sh unit_tests.vader
 #
 # or to run all tests:
 #
@@ -14,11 +14,11 @@
 # Nevertheless, how you run tests, every 
 # test will be run in separate vim process.
 #
-# To run tests `vader.vim` needed. Two way to use 
-# `vader.vim` exist. The first one is set `VADER_PATH`.
+# To run tests `vader.vim` needed. You have two ways 
+# to use `vader.vim`. The first one is set `VADER_PATH`.
 # By default `VADER_PATH` is '~/.vim/plugged/vader.vim/'.
 # If path from the `VADER_PATH` is absent, 
-# 'https://github.com/junegunn/vader.vim' will cloned 
+# 'https://github.com/junegunn/vader.vim' will be cloned 
 # to the temp directory which will be used as the 
 # `VADER_PATH`.
 # ====================================================
@@ -58,7 +58,7 @@ echo $VIMRC
 function run() {
   echo "Run $1"
 
-  vim -Nu <(echo $VIMRC) -c "Vader! $1"
+  vim -EsNu <(echo $VIMRC) -c "Vader! $1"
 
   if [[ $? == 0 ]]
   then

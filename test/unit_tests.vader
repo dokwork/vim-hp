@@ -1,4 +1,7 @@
-Given (Three different types of titles):
+# This script contains unit tests for most important 
+# functions.
+
+Given (Doc draft example):
   ============================================================
 
   =
@@ -50,12 +53,12 @@ Execute(Build sections):
   \   { 'name': 'New subsection title', 'tag': 'NewSubTitleTag', 'level': '1.2.', 'line': 10 },
   \   { 'name': 'New section title', 'tag': 'NewSectionTitleTag', 'level': '2.', 'line': 13 },
   \]
-  let actual = hp#BuildSections()
+  let actual = hp#BuildSections(1)
 
   AssertEqual expected, actual
 
 Execute(Generate string with the content):
-  let result = hp#GenerateHelpContent(55)
+  let result = hp#GenerateContentsItems(55, 1)
   AssertEqual '*CONTENTS*',
               \ result[0]
   AssertEqual '    1. Section title.........................|TitleTag|', 
@@ -66,30 +69,3 @@ Execute(Generate string with the content):
               \ result[3]
   AssertEqual '    2. New section title...........|NewSectionTitleTag|',
               \ result[4]
-
-Execute(Insert the Content on the 2 line and update titles):
-  execute 'set filetype=help'
-  execute 'set textwidth=60'
-  execute "normal! ggj"
-  HpGenerateContent 60
-  AssertEqual { 'begin': 2, 'end': 6, 'width': 60 }, hp#FindContents()
-
-Expect(Content with two sections):
-  ============================================================
-  *CONTENTS*
-      1. Section title..............................|TitleTag|
-          1.1. Subsection title..................|SubTitleTag|
-          1.2. New subsection title...........|NewSubTitleTag|
-      2. New section title................|NewSectionTitleTag|
-
-  ============================================================
-  1. Section title                                  *TitleTag*
-
-  ------------------------------------------------------------
-  1.1. Subsection title                          *SubTitleTag*
-
-  ------------------------------------------------------------
-  1.2. New subsection title                   *NewSubTitleTag*
-
-  ============================================================
-  2. New section title                    *NewSectionTitleTag*

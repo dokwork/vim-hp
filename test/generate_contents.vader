@@ -1,0 +1,45 @@
+# This test scenario validates a generating the Contents of 
+# the buffer with draft of help file.
+
+Given (Doc draft example):
+  ============================================================
+
+  =
+  1. Section title *TitleTag*
+
+  ---
+  1.1. Subsection title *SubTitleTag*
+
+  --
+  #.#. New subsection title *NewSubTitleTag*
+
+  ==
+  #. New section title *NewSectionTitleTag*
+
+Execute(Insert the Content on the 2 line and update titles):
+  execute 'set filetype=help'
+  execute 'set textwidth=60'
+  execute "normal! ggj"
+  HpGenerateContent 60
+  AssertEqual { 'begin': 2, 'end': 6, 'width': 60 }, hp#FindContents()
+
+Expect(Content with two sections):
+  ============================================================
+  *CONTENTS*
+      1. Section title..............................|TitleTag|
+          1.1. Subsection title..................|SubTitleTag|
+          1.2. New subsection title...........|NewSubTitleTag|
+      2. New section title................|NewSectionTitleTag|
+
+  ============================================================
+  1. Section title                                  *TitleTag*
+
+  ------------------------------------------------------------
+  1.1. Subsection title                          *SubTitleTag*
+
+  ------------------------------------------------------------
+  1.2. New subsection title                   *NewSubTitleTag*
+
+  ============================================================
+  2. New section title                    *NewSectionTitleTag*
+

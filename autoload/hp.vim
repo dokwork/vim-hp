@@ -1,25 +1,56 @@
+" MIT License
+"
+" Copyright (c) 2021 Vladimir Popov <vladimir@dokwork.ru>
+"
+" Permission is hereby granted, free of charge, to any person obtaining a copy
+" of this software and associated documentation files (the "Software"), to deal
+" in the Software without restriction, including without limitation the rights
+" to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+" copies of the Software, and to permit persons to whom the Software is
+" furnished to do so, subject to the following conditions:
+"
+" The above copyright notice and this permission notice shall be included in all
+" copies or substantial portions of the Software.
+"
+" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+" AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+" OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+" SOFTWARE.
+
 const s:CONTENTS = '*CONTENTS*'
 const s:SEPARATOR_REGEX = '[-=]'
 const s:LEVEL_REGEX = '((\d|\#)+\.?)+'
 const s:TAG_REGEX = '(\*\w+\*)'
 
 function! hp#UpdateAll() abort
-  let sections = hp#BuildSections()
-  if empty(sections)
-    throw 'No one section was found.'
+  const contents = hp#FindContents()
+  if empty(contents)
+    throw 'Contents was not found. Please, generate it before updating'
   endif
 
-  call hp#UpdateContents(sections)
+  const lfrom = contents['end']
+  const sections = hp#BuildSections(lfrom)
+  if empty(sections)
+    throw 'No one section was found after ' .. lfrom .. ' line.'
+  endif
 
-  for section in sections 
+  call s:UpdateSections(sections)
+  call s:UpdateContents(contents, sections)
+endfunction
+
+function! s:UpdateSections(sections)
+  for section in a:sections 
     let line =  section.line
-    let orig_str = getline(line)
 
     " fullfill separator
     let prev_str = getline(line-1)
     if s:IsSeparator(prev_str)
       let separator = prev_str[0]
-      call setline(line-1, repeat(separator, &textwidth))
+      let width = &textwidth > 0 ? &textwidth : len(prev_str)
+      call setline(line-1, repeat(separator, width))
     endif
     
     " replace level
@@ -32,13 +63,37 @@ function! hp#UpdateAll() abort
   endfor
 endfunction
 
-function! hp#UpdateContents(sections) abort
+function! s:UpdateContents(contents, sections) abort
+  const lines = hp#GenerateContentsItems(a:contents.width, a:sections)
+  let lnum = a:contents.begin
+  for line in lines
+    if lnum <= a:contents.end
+      call setline(lnum, line)
+    else 
+      call append(lnum - 1, line)
+    endif
+    let lnum += 1
+  endfor
 
+  let result = copy(a:contents)
+  let result.end = lnum - 1
+
+  " remove old items
+  if result.end < a:contents.end
+    " execute lnum .. ',' .. a:contents.end .. 'delete_'
+    call execute(lnum .. ',' .. a:contents.end .. 'delete_')
+  endif
+
+  return result
 endfunction
 
-" Returns an array with content's lines
-function! hp#GenerateHelpContent(width, ...)
-  let sections = a:0 > 1 ? a:1 : hp#BuildSections()
+" Returns an array with content's lines with width `width` for all 
+" sections. Additionally, a list of sections or number of line can be 
+" specified.
+function! hp#GenerateContentsItems(width, lfromOrSections) abort
+  let sections = type(a:lfromOrSections) == v:t_number 
+    \ ? hp#BuildSections(a:lfromOrSections)
+    \ : a:lfromOrSections
   let result = [s:CONTENTS]
   let tab_size = 4
   for section in sections
@@ -52,14 +107,17 @@ function! hp#GenerateHelpContent(width, ...)
   return result
 endfunction
 
+" Moves everything befor `pos` on the line `lnum` to the left and
+" other part to the right
 function! hp#LeftRight(lnum, pos)
     const str = getline(a:lnum)
     if empty(str)
       return 0
     endif
+    const width = &textwidth > 0 ? &textwidth : 80
     const left = trim(a:pos > 0 ? str[0:a:pos-1] : '')
     const right = trim(str[a:pos:])
-    const spaces = &textwidth - len(left) - len(right)
+    const spaces = width - len(left) - len(right)
     const new_str = left .. repeat(' ', spaces) .. right
     call setline(a:lnum, new_str)
 endfunction
@@ -73,7 +131,7 @@ endfunction
 function! hp#UpdateLevel(section) abort
     let line = a:section.line
     try
-      execute  line .. 's/\v' .. s:LEVEL_REGEX .. '/' .. a:section.level
+      execute  line .. 's/\v^\s*' .. s:LEVEL_REGEX .. '/' .. a:section.level
     catch 
       throw 'Level was not found at line ' .. line .. ":\n" .. getline(line)
             \.. "\nSection was " .. string(a:section) .. "\nReason is:\n"
@@ -90,35 +148,44 @@ function! hp#FindContents()
   if firstline < 0
     return {}
   endif
-  const i = stridx(getline(firstline), s:CONTENTS)
   let end = firstline
   while end < line('$') && !s:IsEmpty(getline(end + 1))
     let end += 1
   endwhile
 
-  return { 'begin': firstline, 'end': end, 'width': len(getline(end)) - i }
+  const padding = stridx(getline(firstline), s:CONTENTS)
+  return { 'begin': firstline, 'end': end, 'width': len(getline(end)) - padding }
 endfunction
 
-" Returns array with sections
-function! hp#BuildSections() abort 
+" Returns array with sections which follow after line `lfrom`.
+function! hp#BuildSections(lfrom) abort 
   let sections = []
-  let i = hp#NextSectionNum(hp#FindContents()['end'])
+  let i = hp#NextSectionNum(a:lfrom)
   while i > 0 && i <= line('$')
-    let str = getline(i)
-    let mask = hp#ExtractSectionLevelMask(i)
-    let section = {
-          \ 'name': hp#ExtractSectionName(i),
-          \ 'tag': hp#ExtractSectionTag(i),
-          \ 'level': empty(sections) 
-          \           ? '1.' 
-          \           : hp#IncrementLevel(sections[-1].level, mask),
-          \ 'line': i
-          \ }
+    try
+      let section = ParseSection(i, sections)
+    catch
+      throw 'Exception on parsing section on the line ' .. i 
+            \ .. '. The reason is: ' .. v:errmsg
+    endtry
     call add(sections, section)
     let i = hp#NextSectionNum(i)
   endwhile
 
   return sections 
+endfunction
+
+function! ParseSection(lnum, sections) abort
+  let str = getline(a:lnum)
+  let mask = hp#ExtractSectionLevelMask(a:lnum)
+  return {
+        \ 'name': hp#ExtractSectionName(a:lnum),
+        \ 'tag': hp#ExtractSectionTag(a:lnum),
+        \ 'level': empty(a:sections) 
+        \           ? '1.' 
+        \           : hp#IncrementLevel(a:sections[-1].level, mask),
+        \ 'line': a:lnum
+        \ }
 endfunction
 
 " Returns a number of the line with a title of the next section or -1.

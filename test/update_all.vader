@@ -1,0 +1,56 @@
+# This test scenario validates an updating the help file in
+# case when doc was edited and Contents is not actual
+
+Given(Modified doc example):
+  #.#. This is a part of document before the Contents. 
+  It should not be included in the Contetns and should not be 
+  changed.
+
+  *CONTENTS*
+      1. Section A..................................|SectionA|
+          1.1. Subsection A......................|SubsectionA|
+      2. Section B..................................|SectionB|
+
+  ============================================================
+  1. New Section                                  *NewSection*
+
+  ============================================================
+  1. Section A                          *SectionA*
+
+  ------------------------------------------------------------
+  #.#. New Subsection A                  *NewSubsectionA*
+
+  ------------------------------------------------------------
+  1.2. Subsection A                  *SubsectionA*
+
+  ============================================================
+
+Execute(Update doc):
+  execute 'set filetype=help'
+  execute 'set textwidth=60'
+  HpUpdateAll
+
+Expect(Updated Contents and sections numbers):
+  #.#. This is a part of document before the Contents. 
+  It should not be included in the Contetns and should not be 
+  changed.
+
+  *CONTENTS*
+      1. New Section..............................|NewSection|
+      2. Section A..................................|SectionA|
+          2.1. New Subsection A...............|NewSubsectionA|
+          2.2. Subsection A......................|SubsectionA|
+
+  ============================================================
+  1. New Section                                  *NewSection*
+
+  ============================================================
+  2. Section A                                      *SectionA*
+
+  ------------------------------------------------------------
+  2.1. New Subsection A                       *NewSubsectionA*
+
+  ------------------------------------------------------------
+  2.2. Subsection A                              *SubsectionA*
+  
+  ============================================================
