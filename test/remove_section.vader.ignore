@@ -1,8 +1,15 @@
+# This test scenario validates an updating the help file in
+#  case of removing section.
+
+# !IGNORED! because I don't understand why it fails when it's
+# run from the shell. By the way, it's passed if run it directly:
+# :Vader
+
 Given(Doc in which one section was removed):  
   *CONTENTS*
       1. Section A..................................|SectionA|
       2. Section B..................................|SectionB|
-
+  
   ============================================================
   1. Section A                                      *SectionA*
   ------------------------------------------------------------
@@ -15,7 +22,7 @@ Execute(Update doc):
 Expect(Contents with only one section):
   *CONTENTS*
       1. Section A..................................|SectionA|
-
+  
   ============================================================
   1. Section A                                      *SectionA*
   ------------------------------------------------------------

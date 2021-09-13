@@ -1,3 +1,6 @@
+# This test scenario validates a generating the Contents of 
+# the buffer with draft of help file.
+
 Given (Doc draft example):
   ============================================================
 

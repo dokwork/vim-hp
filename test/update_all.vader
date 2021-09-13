@@ -1,4 +1,6 @@
-# Case when doc was edited and Contents is not actual
+# This test scenario validates an updating the help file in
+# case when doc was edited and Contents is not actual
+
 Given(Modified doc example):
   #.#. This is a part of document before the Contents. 
   It should not be included in the Contetns and should not be 

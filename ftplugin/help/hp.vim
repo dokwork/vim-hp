@@ -1,13 +1,8 @@
-" setlocal foldmethod=expr
-" setlocal foldexpr=GetHelpFold(v:lnum)
-
-" Create a command to generate the Contents
+" Command to generate the Contents
 command! -nargs=? HpGenerateContents call <SID>InsertContents(<f-args>)
 
-" Updates titles
+" Command to updates and format titles and the Contents
 command! HpUpdateAll call hp#UpdateAll()
-
-command! LeftRight call <SID>LeftRight()
 
 function! s:InsertContents(...)
   let width = ( a:0 > 0 ) ? a:1 : 80
@@ -16,53 +11,15 @@ function! s:InsertContents(...)
   call hp#UpdateAll()
 endfunction
 
-function! s:LeftRight()
-  let [bufnum, lnum, col, off] = getpos('.')
-  call hp#LeftRight(lnum, col)
-endfunction
+if get(g:, 'hp_fold_off', v:false) | finish | endif
 
-" Jump between any sections
-noremap <script> <buffer> <silent> ]]
-      \ :call <SID>NextSection(1, 0, 0)<bar>
-      \ execute "normal z\r"<cr>
-noremap <script> <buffer> <silent> [[
-      \ :call <SID>NextSection(1, 1, 0)<bar>
-      \ execute "normal z\r"<cr>
+setlocal foldmethod=expr
+setlocal foldexpr=GetHelpFold(v:lnum)
 
-vnoremap <script> <buffer> <silent> ]]
-      \ :call <SID>NextSection(1, 0, 1)<cr>
-vnoremap <script> <buffer> <silent> [[
-      \ :call <SID>NextSection(1, 1, 1)<cr>
-
-" Jump between main sections
-noremap <script> <buffer> <silent> []
-      \ :call <SID>NextSection(0, 0, 0)<bar>
-      \ execute "normal z\r"<cr>
-noremap <script> <buffer> <silent> ][
-      \ :call <SID>NextSection(0, 1, 0)<bar>
-      \ execute "normal z\r"<cr>
-
-vnoremap <script> <buffer> <silent> []
-      \ :call <SID>NextSection(0, 0, 1)<cr>
-vnoremap <script> <buffer> <silent> ][
-      \ :call <SID>NextSection(0, 1, 1)<cr>
-
-function! s:NextSection(separator, backwards, isVisual)
-  if a:isVisual
-    normal! gv
-  endif
-
-  if a:separator == 0
-    let pattern ='\v^\=+'
+function! GetHelpFold(bufline)
+  if getline(a:bufline) =~ '\v^\s*[-|=]+\s*$'
+    return '0'
   else
-    let pattern = '\v^[-|=]+'
+    return '1'
   endif
-
-  if a:backwards
-    let dir = '?'
-  else
-    let dir = '/'
-  endif
-
-  execute "silent normal! " . dir . pattern . dir . "\r"
 endfunction
