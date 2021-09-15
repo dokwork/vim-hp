@@ -21,9 +21,9 @@
 " SOFTWARE.
 
 const s:CONTENTS = '*CONTENTS*'
-const s:SEPARATOR_REGEX = '[-=]'
 const s:LEVEL_REGEX = '((\d|\#)+\.?)+'
-const s:TAG_REGEX = '(\*\w+\*)'
+const s:TAG_REGEX = '(\*\k+\*)'
+const s:SECTION_REGEX = '\v^\S+.*' .. s:TAG_REGEX
 
 function! hp#UpdateAll() abort
   const contents = hp#FindContents()
@@ -41,18 +41,10 @@ function! hp#UpdateAll() abort
   call s:UpdateContents(contents, sections)
 endfunction
 
-function! s:UpdateSections(sections)
+function! s:UpdateSections(sections) abort
   for section in a:sections 
     let line =  section.line
 
-    " fullfill separator
-    let prev_str = getline(line-1)
-    if s:IsSeparator(prev_str)
-      let separator = prev_str[0]
-      let width = &textwidth > 0 ? &textwidth : len(prev_str)
-      call setline(line-1, repeat(separator, width))
-    endif
-    
     " replace level
     call hp#UpdateLevel(section)
 
@@ -195,11 +187,11 @@ function! hp#NextSectionNum(lnum)
   let current = a:lnum + 1
   while current <= line('$')
     let str = getline(current)
-    " section begins on the next after separator string
-    if !(s:IsEmpty(str) || s:IsSeparator(str))
-          \ && s:IsSeparator(getline(current - 1))
+    " section must begin from a name and a tag must follow after the name
+    if (str =~ s:SECTION_REGEX)
       return current
     endif
+
     let current += 1
   endwhile
 
@@ -245,11 +237,6 @@ function! hp#IncrementLevel(level, mask) abort
   endif
   return join(levels[:i], '.') .. '.'
 endfunction
-
-" Checks that line begins from one of the symbols: '-' or '='
-function! s:IsSeparator(str)
-  return  a:str =~ '\v^' .. s:SEPARATOR_REGEX .. '+\s*$'
-endfunction  
 
 " checks if the string is empty
 function! s:IsEmpty(str)
