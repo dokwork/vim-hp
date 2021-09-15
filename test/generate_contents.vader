@@ -4,16 +4,16 @@
 Given (Doc draft example):
   ============================================================
 
-  =
+  ============================================================
   1. Section title *TitleTag*
 
-  ---
+  ------------------------------------------------------------
   1.1. Subsection title *SubTitleTag*
 
-  --
+  ------------------------------------------------------------
   #.#. New subsection title *NewSubTitleTag*
 
-  ==
+  ============================================================
   #. New section title *NewSectionTitleTag*
 
 Execute(Insert the Content on the 2 line and update titles):
