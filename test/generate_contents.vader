@@ -5,41 +5,49 @@ Given (Doc draft example):
   ============================================================
 
   ============================================================
-  1. Section title *TitleTag*
+  1. Section title 1 *TitleTag1*
 
   ------------------------------------------------------------
-  1.1. Subsection title *SubTitleTag*
+  1.1. Subsection title 1 *SubTitleTag11*
 
   ------------------------------------------------------------
-  #.#. New subsection title *NewSubTitleTag*
+  #.#. Subsection title 2 *SubTitleTag12*
 
   ============================================================
-  #. New section title *NewSectionTitleTag*
+  #. Section title 2 *TitleTag2*
+
+  item 1 *Item1*
+  item 2 *Item2*
 
 Execute(Insert the Content on the 2 line and update titles):
   execute 'set filetype=help'
   execute 'set textwidth=60'
   execute "normal! ggj"
   HpGenerateContent 60
-  AssertEqual { 'begin': 2, 'end': 6, 'width': 60 }, hp#FindContents()
+  AssertEqual { 'begin': 2, 'end': 8, 'width': 60 }, hp#FindContents()
 
-Expect(Content with two sections):
+Expect(Contents and updated sections titles):
   ============================================================
   *CONTENTS*
-      1. Section title..............................|TitleTag|
-          1.1. Subsection title..................|SubTitleTag|
-          1.2. New subsection title...........|NewSubTitleTag|
-      2. New section title................|NewSectionTitleTag|
+      1. Section title 1...........................|TitleTag1|
+          1.1. Subsection title 1..............|SubTitleTag11|
+          1.2. Subsection title 2..............|SubTitleTag12|
+      2. Section title 2...........................|TitleTag2|
+           item 1......................................|Item1|
+           item 2......................................|Item2|
 
   ============================================================
-  1. Section title                                  *TitleTag*
+  1. Section title 1                               *TitleTag1*
 
   ------------------------------------------------------------
-  1.1. Subsection title                          *SubTitleTag*
+  1.1. Subsection title 1                      *SubTitleTag11*
 
   ------------------------------------------------------------
-  1.2. New subsection title                   *NewSubTitleTag*
+  1.2. Subsection title 2                      *SubTitleTag12*
 
   ============================================================
-  2. New section title                    *NewSectionTitleTag*
+  2. Section title 2                               *TitleTag2*
+
+  item 1                                               *Item1*
+  item 2                                               *Item2*
 

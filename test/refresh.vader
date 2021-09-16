@@ -19,6 +19,7 @@ Given(Modified doc example):
 
   ------------------------------------------------------------
   #.#. New Subsection A                  *NewSubsectionA*
+  item *Item*
 
   ------------------------------------------------------------
   1.2. Subsection A                  *SubsectionA*
@@ -28,7 +29,7 @@ Given(Modified doc example):
 Execute(Update doc):
   execute 'set filetype=help'
   execute 'set textwidth=60'
-  HpUpdateAll
+  HpRefresh
 
 Expect(Updated Contents and sections numbers):
   #.#. This is a part of document before the Contents. 
@@ -39,6 +40,7 @@ Expect(Updated Contents and sections numbers):
       1. New Section..............................|NewSection|
       2. Section A..................................|SectionA|
           2.1. New Subsection A...............|NewSubsectionA|
+               item.....................................|Item|
           2.2. Subsection A......................|SubsectionA|
 
   ============================================================
@@ -49,6 +51,7 @@ Expect(Updated Contents and sections numbers):
 
   ------------------------------------------------------------
   2.1. New Subsection A                       *NewSubsectionA*
+  item                                                  *Item*
 
   ------------------------------------------------------------
   2.2. Subsection A                              *SubsectionA*
