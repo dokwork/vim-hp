@@ -1,0 +1,15 @@
+Given(File without a contents):
+  This
+    is
+      a
+        file
+
+Execute("FindContents"):
+  AssertEqual {}, hp#FindContents()
+
+Given(File with the contents):
+  This is a file with the
+  *CONTENTS*
+
+Execute(FindContents):
+  AssertEqual {'begin': 2, 'end': 2, 'width': 10}, hp#FindContents()

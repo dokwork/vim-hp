@@ -29,7 +29,7 @@ const s:SECTION_REGEX = '\v^' .. s:NUMBER_REGEX .. '?' .. s:NAME_REGEX .. s:TAG_
 function! hp#Refresh() abort
   const contents = hp#FindContents()
   if empty(contents)
-    throw 'Contents was not found. Please, generate it before updating'
+    throw 'Contents was not found. Please, generate it before updating.'
   endif
 
   const lfrom = contents['end']
@@ -141,7 +141,7 @@ function! hp#FindContents() abort
   " if not found, try to find after cursor
   let firstline = search(s:CONTENTS, 'nc')
   let firstline = firstline > 0 ? firstline : search(s:CONTENTS, 'n')
-  if firstline < 0
+  if firstline <= 0
     return {}
   endif
   let end = firstline
