@@ -92,8 +92,8 @@ function! hp#GenerateContentsItems(width, lfromOrSections) abort
   for section in sections
     let tab = repeat(' ', section.level * tab_size)
     let title = tab .. section.number .. ' ' .. section.name
-    let dots = repeat('.', a:width - len(section.tag) - len(title) - 2)
-    call add(result, title .. dots .. '|' .. section.tag .. '|')
+    let dots = repeat('.', a:width - len(section.tag) - len(title))
+    call add(result, title .. dots .. substitute(section.tag, '*', '|', 'g'))
   endfor
 
   return result
@@ -136,7 +136,7 @@ function! hp#UpdateNumber(section) abort
 endfunction
 
 " Returns { begin: <number>, end:<number>, width: <number> } or {}
-function! hp#FindContents()
+function! hp#FindContents() abort
   " try to find before cursor
   " if not found, try to find after cursor
   let firstline = search(s:CONTENTS, 'nc')
@@ -234,8 +234,7 @@ endfunction
 function! hp#ExtractSectionTag(str)
   " find a tag within '*' at the end of string
   let tag = matchstr(a:str, '\v' .. s:TAG_REGEX .. '\s*')
-  " remove '*'
-  return empty(tag) ? '' : tag[1:-2]
+  return empty(tag) ? '' : tag
 endfunction
 
 " Increment the number by mask: >
