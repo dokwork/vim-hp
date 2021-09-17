@@ -21,11 +21,12 @@
 " SOFTWARE.
 
 const s:CONTENTS = '*CONTENTS*'
-const s:LEVEL_REGEX = '((\d|\#)+\.?)+'
-const s:TAG_REGEX = '(\*\k+\*)'
-const s:SECTION_REGEX = '\v^\S+.*' .. s:TAG_REGEX
+const s:NUMBER_REGEX = '(((\d|\#)+\.?)+)'
+const s:NAME_REGEX = '\S.*'
+const s:TAG_REGEX = '\*\k+\*'
+const s:SECTION_REGEX = '\v^' .. s:NUMBER_REGEX .. '?' .. s:NAME_REGEX .. s:TAG_REGEX .. '\s*$'
 
-function! hp#UpdateAll() abort
+function! hp#Refresh() abort
   const contents = hp#FindContents()
   if empty(contents)
     throw 'Contents was not found. Please, generate it before updating'
@@ -45,8 +46,8 @@ function! s:UpdateSections(sections) abort
   for section in a:sections 
     let line =  section.line
 
-    " replace level
-    call hp#UpdateLevel(section)
+    " replace number
+    call hp#UpdateNumber(section)
 
     " move title to the left and tag to the right
     let str = getline(line)
@@ -89,9 +90,8 @@ function! hp#GenerateContentsItems(width, lfromOrSections) abort
   let result = [s:CONTENTS]
   let tab_size = 4
   for section in sections
-    let fold = len(split(section.level, '\.'))
-    let tab = repeat(' ', fold * tab_size)
-    let title = tab .. section.level .. ' ' .. section.name
+    let tab = repeat(' ', section.level * tab_size)
+    let title = tab .. section.number .. ' ' .. section.name
     let dots = repeat('.', a:width - len(section.tag) - len(title) - 2)
     call add(result, title .. dots .. '|' .. section.tag .. '|')
   endfor
@@ -114,19 +114,23 @@ function! hp#LeftRight(lnum, pos)
     call setline(a:lnum, new_str)
 endfunction
 
-function! hp#UpdateLevels(sections) abort
+function! hp#UpdateNumbers(sections) abort
   for section in a:sections 
-    call hp#UpdateLevel(section)
+    call hp#UpdateNumber(section)
   endfor
 endfunction
 
-function! hp#UpdateLevel(section) abort
+" Replaces a mask or number in the line of the section.
+function! hp#UpdateNumber(section) abort
+    if empty(a:section.number)
+      return
+    endif
     let line = a:section.line
     try
-      execute  line .. 's/\v^\s*' .. s:LEVEL_REGEX .. '/' .. a:section.level
+      execute  line .. 's/\v^\s*' .. s:NUMBER_REGEX .. '/' .. a:section.number
     catch 
-      throw 'Level was not found at line ' .. line .. ":\n" .. getline(line)
-            \.. "\nSection was " .. string(a:section) .. "\nReason is:\n"
+      throw 'Number was not found at line ' .. line .. ":\n" .. getline(line)
+            \.. "\nSection was: " .. string(a:section) .. "\nThe reason is:\n"
             \.. v:errmsg
     endtry
 endfunction
@@ -141,7 +145,7 @@ function! hp#FindContents()
     return {}
   endif
   let end = firstline
-  while end < line('$') && !s:IsEmpty(getline(end + 1))
+  while end < line('$') && !IsBlank(getline(end + 1))
     let end += 1
   endwhile
 
@@ -152,38 +156,118 @@ endfunction
 " Returns array with sections which follow after line `lfrom`.
 function! hp#BuildSections(lfrom) abort 
   let sections = []
-  let i = hp#NextSectionNum(a:lfrom)
+  let i = hp#NextSectionLine(a:lfrom)
   while i > 0 && i <= line('$')
     try
-      let section = ParseSection(i, sections)
+      let section = s:ParseSection(i, sections)
     catch
-      throw 'Exception on parsing section on the line ' .. i 
-            \ .. '. The reason is: ' .. v:errmsg
+      throw 'Exception on parsing section on the line ' .. i ..
+            \ '. The reason is: ' .. v:errmsg 
     endtry
     call add(sections, section)
-    let i = hp#NextSectionNum(i)
+    let i = hp#NextSectionLine(i)
   endwhile
 
   return sections 
 endfunction
 
-function! ParseSection(lnum, sections) abort
+function! s:ParseSection(lnum, sections) abort
   let str = getline(a:lnum)
-  let mask = hp#ExtractSectionLevelMask(a:lnum)
+  let mask = hp#ExtractSectionNumberMask(str)
   return {
-        \ 'name': hp#ExtractSectionName(a:lnum),
-        \ 'tag': hp#ExtractSectionTag(a:lnum),
-        \ 'level': empty(a:sections) 
-        \           ? '1.' 
-        \           : hp#IncrementLevel(a:sections[-1].level, mask),
-        \ 'line': a:lnum
+        \ 'name': hp#ExtractSectionName(str),
+        \ 'tag': hp#ExtractSectionTag(str),
+        \ 'number': empty(mask) 
+        \    ? '' 
+        \    :  hp#IncrementNumber(s:PrevNum(a:sections), mask),
+        \ 'line': a:lnum,
+        \ 'level': s:CalcSectionLevel(mask, a:sections)
         \ }
+endfunction
+
+function! s:CalcSectionLevel(mask, sections) abort
+  " let's try take a level from the mask
+  let level = empty(a:mask) ? 0 : len(split(a:mask, '\.'))
+  if level > 0
+    return level
+  "if mask is empty, taking a level is more difficult:
+  " if no one previous section exeists
+  elseif empty(a:sections)
+    " we should begin numeration from 1
+    return 1
+    " if previous section is not numered too 
+  elseif empty(a:sections[-1].number)
+    " we can continue with level from that section
+    return a:sections[-1].level
+  " or should increment it
+  else
+    return a:sections[-1].level + 1
+  endif
+endfunction
+
+"Returns the last not empty number. In case of empty sections it returns '0.'
+function! s:PrevNum(sections, ...) abort 
+  " index from the end of sections
+  let i = a:0 > 0 ? a:1 : 1
+
+  return i > len(a:sections) ? '0.' : 
+        \ empty(a:sections[-i].number) 
+        \ ? s:PrevNum(a:sections, i+1)
+        \ : a:sections[-i].number
+endfunction
+
+" Returns a mask of number extracted from the section or empty string
+function! hp#ExtractSectionNumberMask(str)
+  let mask = matchstr(a:str, '\v^' .. s:NUMBER_REGEX)
+  return empty(mask) ? '' : substitute(mask, '\d', '#', 'g')
+endfunction
+
+" Returns the name of the section or an empty string
+function! hp#ExtractSectionName(str)
+  " the name is a part between optional number and requered tag
+  let name = matchstr(a:str, 
+        \ '\v^' .. s:NUMBER_REGEX .. '?\zs.*\ze' .. s:TAG_REGEX)
+  return trim(name)
+endfunction
+
+" Returns a tag of the section or an empty string
+function! hp#ExtractSectionTag(str)
+  " find a tag within '*' at the end of string
+  let tag = matchstr(a:str, '\v' .. s:TAG_REGEX .. '\s*')
+  " remove '*'
+  return empty(tag) ? '' : tag[1:-2]
+endfunction
+
+" Increment the number by mask: >
+"   hp#IncrementNumber('', '#') => throw exception
+"   hp#IncrementNumber('1.', '#.') => '2.'
+"   hp#IncrementNumber('1.1', '#.#') => '1.2'
+"   hp#IncrementNumber('1.1', '#.') => '2.'
+function! hp#IncrementNumber(number, mask) abort
+  let numbers = split(a:number, '\.')
+  if empty(numbers)
+    throw "Wron number: " .. a:number .. 
+          \". Number should contains digitals separated by '.' "
+  endif
+
+  let placeholders = split(a:mask, '\.')
+  if empty(placeholders) 
+    throw "Wrong mask: " .. a:number .. ". Mask should look like '#.##'"
+          \.." where '#' is a placeholder for number and '.' is just separator."
+  endif
+  let i = len(placeholders) - 1
+  if i < len(numbers)
+    let numbers[i] += 1
+  else
+    call extend(numbers, repeat([1], len(placeholders) - len(numbers)))
+  endif
+  return join(numbers[:i], '.') .. '.'
 endfunction
 
 " Returns a number of the line with a title of the next section or -1.
 "
 " lnum - number of the first line for a search.
-function! hp#NextSectionNum(lnum)
+function! hp#NextSectionLine(lnum)
   let current = a:lnum + 1
   while current <= line('$')
     let str = getline(current)
@@ -198,47 +282,7 @@ function! hp#NextSectionNum(lnum)
   return -1
 endfunction
 
-" Returns a mask of level extracted from the section or empty string
-function! hp#ExtractSectionLevelMask(lnum)
-  let mask = matchstr(getline(a:lnum), '\v^\s*\zs' .. s:LEVEL_REGEX)
-  return substitute(mask, '\d', '#', 'g')
-endfunction
-
-" Returns the name of the section or an empty string
-function! hp#ExtractSectionName(lnum)
-  let name = matchstr(getline(a:lnum), '\v^.*\ze' .. s:TAG_REGEX)
-  let level = hp#ExtractSectionLevelMask(a:lnum)
-  let name = trim(name[len(level):])
-  return empty(name) ? trim(getline(a:lnum)) : name
-endfunction
-
-" Returns a tag of the section or an empty string
-function! hp#ExtractSectionTag(lnum)
-  let Tag = { i -> matchstr(getline(i), '\v\*\zs\w+\ze\*') }
-  let tag = Tag(a:lnum)
-  return empty(tag) ? Tag(a:lnum + 1) : tag
-endfunction
-
-" Increment the level by mask: >
-"   hp#IncrementLevel('1.1', '#.#') => '1.2'
-"   hp#IncrementLevel('1.1', '#.') => '2.'
-function! hp#IncrementLevel(level, mask) abort
-  let levels = split(a:level, '\.')
-  if empty(levels) | throw "Wrong level: " .. a:level | endif
-
-  let masks = split(a:mask, '\.')
-  let i = len(masks) - 1
-  if i < 0 | throw "Wrong mask: " .. a:mask | endif
-
-  if i < len(levels)
-    let levels[i] += 1
-  else
-    call add(levels, 1)
-  endif
-  return join(levels[:i], '.') .. '.'
-endfunction
-
-" checks if the string is empty
-function! s:IsEmpty(str)
+" checks if the string is blank
+function! IsBlank(str)
   return  a:str =~ '^\s*$'
 endfunction  
