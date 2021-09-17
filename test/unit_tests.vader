@@ -7,9 +7,9 @@ Given (Doc draft example):
 
   1.1. Subsection title *SubTitleTag*
 
-  Unnumered section 1 *UnnumeredTag1*
+  Unnumbered section 1 *UnnumberedTag1*
 
-  Unnumered section 2 *UnnumeredTag2*
+  Unnumbered section 2 *UnnumberedTag2*
 
   #.#. New subsection title *NewSubTitleTag*
 
@@ -44,16 +44,16 @@ Execute(Increment absent number):
 Execute(Extract section names):
   AssertEqual 'Section title', hp#ExtractSectionName(getline(2))
   AssertEqual 'Subsection title', hp#ExtractSectionName(getline(4))
-  AssertEqual 'Unnumered section 1', hp#ExtractSectionName(getline(6))
-  AssertEqual 'Unnumered section 2', hp#ExtractSectionName(getline(8))
+  AssertEqual 'Unnumbered section 1', hp#ExtractSectionName(getline(6))
+  AssertEqual 'Unnumbered section 2', hp#ExtractSectionName(getline(8))
   AssertEqual 'New subsection title', hp#ExtractSectionName(getline(10))
   AssertEqual 'New section title', hp#ExtractSectionName(getline(12))
 
 Execute(Extract section tag):
   AssertEqual 'TitleTag', hp#ExtractSectionTag(getline(2))
   AssertEqual 'SubTitleTag', hp#ExtractSectionTag(getline(4))
-  AssertEqual 'UnnumeredTag1', hp#ExtractSectionTag(getline(6))
-  AssertEqual 'UnnumeredTag2', hp#ExtractSectionTag(getline(8))
+  AssertEqual 'UnnumberedTag1', hp#ExtractSectionTag(getline(6))
+  AssertEqual 'UnnumberedTag2', hp#ExtractSectionTag(getline(8))
   AssertEqual 'NewSubTitleTag', hp#ExtractSectionTag(getline(10))
   AssertEqual 'NewSectionTitleTag', hp#ExtractSectionTag(getline(12))
 
@@ -61,8 +61,8 @@ Execute(Build sections):
   let expected = [
   \   { 'name': 'Section title', 'number': '1.', 'line': 2, 'level': 1, 'tag': 'TitleTag' },
   \   { 'name': 'Subsection title', 'number': '1.1.', 'line': 4, 'level': 2, 'tag': 'SubTitleTag' },
-  \   { 'name': 'Unnumered section 1', 'number': '', 'line': 6 , 'level': 3, 'tag': 'UnnumeredTag1' },
-  \   { 'name': 'Unnumered section 2', 'number': '', 'line': 8 , 'level': 3, 'tag': 'UnnumeredTag2' },
+  \   { 'name': 'Unnumbered section 1', 'number': '', 'line': 6 , 'level': 3, 'tag': 'UnnumberedTag1' },
+  \   { 'name': 'Unnumbered section 2', 'number': '', 'line': 8 , 'level': 3, 'tag': 'UnnumberedTag2' },
   \   { 'name': 'New subsection title', 'number': '1.2.', 'line': 10 , 'level': 2, 'tag': 'NewSubTitleTag' },
   \   { 'name': 'New section title', 'number': '2.', 'line': 12 , 'level': 1, 'tag': 'NewSectionTitleTag' },
   \]
@@ -78,8 +78,8 @@ Execute(Generate string with the content):
   \ '*CONTENTS*',
   \ '    1. Section title.........................|TitleTag|', 
   \ '        1.1. Subsection title.............|SubTitleTag|',
-  \ '             Unnumered section 1........|UnnumeredTag1|',
-  \ '             Unnumered section 2........|UnnumeredTag2|',
+  \ '             Unnumbered section 1......|UnnumberedTag1|',
+  \ '             Unnumbered section 2......|UnnumberedTag2|',
   \ '        1.2. New subsection title......|NewSubTitleTag|',
   \ '    2. New section title...........|NewSectionTitleTag|',
   \ ]

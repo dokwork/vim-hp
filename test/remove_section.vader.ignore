@@ -17,7 +17,7 @@ Given(Doc in which one section was removed):
 Execute(Update doc):
   execute 'set filetype=help'
   execute 'set textwidth=60'
-  HpUpdateAll
+  HpRefresh
 
 Expect(Contents with only one section):
   *CONTENTS*
