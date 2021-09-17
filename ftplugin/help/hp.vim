@@ -5,7 +5,7 @@ command! -nargs=? HpGenerateContents call <SID>InsertContents(<f-args>)
 command! HpRefresh call hp#Refresh()
 
 function! s:InsertContents(...)
-  let width = ( a:0 > 0 ) ? a:1 : $textwidth
+  let width = ( a:0 > 0 ) ? a:1 : &textwidth
   let width = width > 0 ? width : 80
   let lnum = line('.')
   call append(lnum - 1, hp#GenerateContentsItems(width, lnum))
