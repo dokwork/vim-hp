@@ -23,8 +23,9 @@
 const s:CONTENTS = '*CONTENTS*'
 const s:NUMBER_REGEX = '(((\d|\#)+\.?)+)'
 const s:NAME_REGEX = '\S.*'
-const s:TAG_REGEX = '\*\k+\*'
-const s:SECTION_REGEX = '\v^' .. s:NUMBER_REGEX .. '?' .. s:NAME_REGEX .. s:TAG_REGEX .. '\s*$'
+const s:TAG_REGEX = '\*\S+\*'
+const s:SECTION_REGEX = 
+      \ '\v^' .. s:NUMBER_REGEX .. '?' .. s:NAME_REGEX .. s:TAG_REGEX .. '\s*$'
 
 function! hp#Refresh() abort
   const contents = hp#FindContents()

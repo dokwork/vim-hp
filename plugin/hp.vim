@@ -27,6 +27,9 @@ command! -nargs=? HpGenerateContents call <SID>InsertContents(<f-args>)
 " Command to updates and format titles and the Contents
 command! HpRefresh call <SID>Refresh()
 
+" Command to move everything before cursor to the left and other to the right
+command! HpLeftRight call <SID>LeftRight()
+
 function! s:InsertContents(...)
   let save_cursor = getcurpos()
   let width = ( a:0 > 0 ) ? a:1 : &textwidth
@@ -47,4 +50,10 @@ function! s:Refresh()
   finally
     call setpos('.', save_cursor)
   endtry
+endfunction
+
+function! s:LeftRight()
+  " [bufnum, lnum, col, off]
+  const pos = getpos('.')
+  call hp#LeftRight(pos[1], pos[2])
 endfunction
