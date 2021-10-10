@@ -7,9 +7,9 @@ Given(File without a contents):
 Execute("FindContents"):
   AssertEqual {}, hp#FindContents()
 
-Given(File with the contents):
+Given(File with a contents):
   This is a file with the
-  *CONTENTS*
+  CONTENTS
 
 Execute(FindContents):
-  AssertEqual {'begin': 2, 'end': 2, 'width': 10}, hp#FindContents()
+  AssertEqual {'begin': 2, 'end': 2, 'width': 8}, hp#FindContents()

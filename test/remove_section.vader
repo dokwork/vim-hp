@@ -2,7 +2,7 @@
 #  case of removing section.
 
 Given(Doc in which one section was removed):  
-  *CONTENTS*
+  CONTENTS
       1. Section A..................................|SectionA|
       2. Section B..................................|SectionB|
   
@@ -16,7 +16,7 @@ Execute(Update doc):
   HpRefresh
 
 Expect(Contents with only one section):
-  *CONTENTS*
+  CONTENTS
       1. Section A..................................|SectionA|
   
   ============================================================

@@ -75,7 +75,7 @@ Execute(Build sections):
 
 Execute(Generate string with the content):
   let expected = [
-  \ '*CONTENTS*',
+  \ 'CONTENTS',
   \ '    1. Section title.........................|TitleTag|', 
   \ '        1.1. Subsection title.............|SubTitleTag|',
   \ '             Unnumbered section 1......|UnnumberedTag1|',

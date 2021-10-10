@@ -28,7 +28,7 @@ Execute(Insert the Content on the 2 line and update titles):
 
 Expect(Contents and updated sections titles):
   ============================================================
-  *CONTENTS*
+  CONTENTS
       1. Section title 1...........................|TitleTag1|
           1.1. Subsection title 1..............|SubTitleTag11|
           1.2. Subsection title 2..............|SubTitleTag12|

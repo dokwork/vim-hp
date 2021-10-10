@@ -6,7 +6,7 @@ Given(Modified doc example):
   It should not be included in the Contetns and should not be 
   changed.
 
-  *CONTENTS*
+  CONTENTS
       1. Section A..................................|SectionA|
           1.1. Subsection A......................|SubsectionA|
       2. Section B..................................|SectionB|
@@ -36,7 +36,7 @@ Expect(Updated Contents and sections numbers):
   It should not be included in the Contetns and should not be 
   changed.
 
-  *CONTENTS*
+  CONTENTS
       1. New Section..............................|NewSection|
       2. Section A..................................|SectionA|
           2.1. New Subsection A...............|NewSubsectionA|
