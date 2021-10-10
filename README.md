@@ -1,7 +1,8 @@
 # vim-hp 
   _"Helps to write a help"_
 
-This plugin is created to help you generate a contents of a vim's help file.
+This plugin is created to help you write documentation for your plugins.
+The main feature is generating a contents of a vim's help file.
 
 It brings two commands:
 
@@ -10,7 +11,7 @@ It brings two commands:
 ```
 ...to generate the contents of the document at the cursor;
 
-And 
+and 
 
 ```viml
 :HpRefresh
@@ -18,10 +19,12 @@ And
 ... to regenerate already existed contents and update numbers of sections in the
 document.
 
+Both commands available only for buffers with [filetype](https://vimhelp.org/filetype.txt.html#filetype) `help`.
+
 |![example](example.gif)|
 |----|
 
-Read more in the doc: [vim-hp.txt](doc/vim-hp.txt)
+Read more in the doc: [vim-hp.txt](doc/vim-hp.txt).
 
 ## How to install
 

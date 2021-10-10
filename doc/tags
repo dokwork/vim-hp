@@ -1,0 +1,10 @@
+CONTENTS	vim-hp.txt	/*CONTENTS*
+HpGenerateContents	vim-hp.txt	/*HpGenerateContents*
+HpRefresh	vim-hp.txt	/*HpRefresh*
+LeftRight	vim-hp.txt	/*LeftRight*
+hp#HpRefresh()	vim-hp.txt	/*hp#HpRefresh()*
+hp-commands	vim-hp.txt	/*hp-commands*
+hp-functions	vim-hp.txt	/*hp-functions*
+hp-sections	vim-hp.txt	/*hp-sections*
+hp-usage	vim-hp.txt	/*hp-usage*
+vim-hp	vim-hp.txt	/*vim-hp*
