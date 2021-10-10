@@ -19,10 +19,10 @@ and
 ... to regenerate already existed contents and update numbers of sections in the
 document.
 
-Both commands available only for buffers with [filetype](https://vimhelp.org/filetype.txt.html#filetype) `help`.
-
 |![example](example.gif)|
 |----|
+
+Both commands available only for buffers with [filetype](https://vimhelp.org/filetype.txt.html#filetype) `help`.
 
 Read more in the doc: [vim-hp.txt](doc/vim-hp.txt).
 
