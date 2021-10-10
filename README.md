@@ -21,6 +21,8 @@ document.
 |![example](example.gif)|
 |----|
 
+Read more in the doc: [vim-hp.txt](doc/vim-hp.txt)
+
 ## How to install
 
 * With [vim-lug](https://github.com/junegunn/vim-plug/):
