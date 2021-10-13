@@ -89,7 +89,7 @@ number:
  11  2. License	         *license*
  12    Some text...
 <
-The command `HpRefresh` will update both the contents and titles:
+The command `:HpRefresh` will update both the contents and titles:
 >
   1 CONTENTS
   2   1. Usage.............|usage|
