@@ -73,7 +73,7 @@ and move tags in the titles of sections to the right side:
   9    Some text...
 <
 Then we decided to add one more section in the middle, let's it be a section
-Commands. We can set number 2 for the new section, or let the plugin take a
+Commands. We can set number 2 for the new section, or let the plugin choose a
 number: 
 >
   1 CONTENTS
