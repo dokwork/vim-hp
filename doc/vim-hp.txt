@@ -1,0 +1,82 @@
+*vim-hp*                plugin to help you write documentation for your plugins.
+
+Author:  Vladimir Popov <vladimir@dokwork.ru>
+License: MIT License
+
+==============================================================================
+CONTENTS
+    1. Usage.......................|hp-usage|
+        1.1. Sections...........|hp-sections|
+    2. Commands.................|hp-commands|
+
+==============================================================================
+1. Usage                                                            *hp-usage*
+
+The main feature of this plugin is generating a contents of your
+documentation. The command |HpGenerateContents| generates a contents of the
+current buffer and put it under cursor. By default, width of the contents will
+be equal to the |textwidth|, but you can specified it explicitly: >
+  :HpGenerateContents 30
+<
+
+To update the contents after some file changes the |HpRefresh| exists. This
+command updates sections and regenerates the contents. It can be invoked in
+any place of the document.
+
+Note: all commands are available only for 'help' files.
+
+See more details in the section |hp-commands|.
+
+1.1. Sections                                                    *hp-sections*
+
+Every section in the documentation are considered as a part of the text from a
+title of one section to a title of the next section. The title of a section
+consists of the following parts: [{index}]{name}{tag}. 
+
+The {index} is an optional part of the title. It should contain numbers or
+number signs (`#`) separated by the dot symbol. The last dot is optional.  For
+example: `1.` or `1.1` or `#.#` and so on. Also, you can mix numbers and
+number signes: `1.#`. 
+
+The {tag} is a sequence of symbols between the `*` as it customary in Vim help.
+
+The {name} is a trimmed sequence of symbols between index (or beginning of the
+line) and tag.
+
+==============================================================================
+2. Commands                                                      *hp-commands*
+
+The following commands are provided by vim-hp for buffers with |filetype| `help`:
+  * |HpGenerateContents| 
+  * |HpRefresh|
+  * |LeftRight|
+
+                                                          *HpGenerateContents*
+:HpGenerateContents [{width}]   Generates a contents of the current buffer and
+                                put it under cursor. If {width} is specified
+                                then contents will take only {width} columns.
+                                If {width} is absent then |textwidth| will be
+                                used, or 80 when |textwidth| is 0.
+
+                                                                   *HpRefresh*
+:HpRefresh                      Updates a sequential numbers of sections 
+                                according to their actual order. Then
+                                regenerates a contents. If the contents is not
+                                found, this command will throw an exception
+                                with advice to generate a contents.
+
+                                                                   *LeftRight*
+:LeftRight                      Moves a text before cursor to the left part of
+                                the document and other text to the right part
+                                according to the |textwidth|. 
+                                Example: >
+                                  some line of the text
+                                            ^
+                                     cursor is here
+                                  
+                                  :LeftRight
+                                  
+                                  some line                       of the text
+<
+
+ vim:tw=78:ts=8:noet:ft=help:norl:
