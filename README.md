@@ -1,4 +1,7 @@
 # vim-hp 
+
+[![Vader Tests](https://github.com/dokwork/vim-hp/actions/workflows/ci.yml/badge.svg)](https://github.com/dokwork/vim-hp/actions/workflows/ci.yml)
+
   _"Helps to write a help"_
 
 This plugin is created to help you write documentation for your plugins.
