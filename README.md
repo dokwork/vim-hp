@@ -45,7 +45,7 @@ use { 'dokwork/vim-hp' }
 
 ## Example
 
-Let's look at an example. We wrote our documentation with two sections:
+Let's see an example. We wrote our documentation with two sections:
 Usage and License. 
 ```
   1 ▉
@@ -88,7 +88,7 @@ number:
  11  2. License	         *license*
  12    Some text...
 ```
-The command `HpRefresh` will update both the contents and titles for us:
+The command `HpRefresh` will update both the contents and titles:
 ```
   1 CONTENTS
   2   1. Usage.............|usage|
